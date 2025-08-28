@@ -1,0 +1,501 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}대시보드 - 하나아트갤러리 관리자{% endblock %}
+
+{% block header_title %}대시보드{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-color);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-color: #cbd5e1;
+    }
+    
+    .stat-card.artists::before {
+        background: var(--primary-color);
+    }
+    
+    .stat-card.exhibitions::before {
+        background: var(--gray-600);
+    }
+    
+    .stat-card.artworks::before {
+        background: var(--gray-700);
+    }
+    
+    .stat-card.visitors::before {
+        background: var(--gray-500);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card.artists .stat-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+    }
+    
+    .stat-card.exhibitions .stat-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: #ffffff;
+    }
+    
+    .stat-card.artworks .stat-icon {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: #ffffff;
+    }
+    
+    .stat-card.visitors .stat-icon {
+        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        color: #ffffff;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .stat-change {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .stat-change.positive {
+        background: rgba(67, 233, 123, 0.1);
+        color: #22c55e;
+    }
+    
+    .stat-change.negative {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .quick-actions-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+    }
+    
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .action-btn {
+        padding: 1rem;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-btn:hover {
+        border-color: #667eea;
+        background: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .action-btn i {
+        font-size: 1.5rem;
+        color: #667eea;
+    }
+    
+    .action-btn span {
+        color: #4a5568;
+        font-weight: 500;
+    }
+    
+    /* Recent Items */
+    .recent-section {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+    
+    .view-all-btn {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .view-all-btn:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+    
+    /* Item Lists */
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .item-row {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .item-row:hover {
+        background: #ffffff;
+        transform: translateX(5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e1;
+    }
+    
+    .item-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+        margin-right: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .item-info {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+    
+    .item-meta {
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    
+    .item-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+    
+    /* Current Exhibition */
+    .current-exhibition {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .current-exhibition::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+    
+    .exhibition-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+    
+    .exhibition-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .exhibition-period {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    /* Grid Layout */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+    
+    @media (max-width: 992px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card artists" onclick="location.href='{% url 'gallery:artist_manage_list' %}'">
+        <div class="stat-icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="stat-value">{{ total_artists }}</div>
+        <div class="stat-label">등록된 작가</div>
+        <span class="stat-change positive">+2 이번 달</span>
+    </div>
+    
+    <div class="stat-card exhibitions" onclick="location.href='{% url 'gallery:exhibition_manage_list' %}'">
+        <div class="stat-icon">
+            <i class="fas fa-images"></i>
+        </div>
+        <div class="stat-value">{{ total_exhibitions }}</div>
+        <div class="stat-label">전체 전시</div>
+        <span class="stat-change positive">+1 이번 달</span>
+    </div>
+    
+    <div class="stat-card artworks" onclick="location.href='{% url 'gallery:artwork_manage_list' %}'">
+        <div class="stat-icon">
+            <i class="fas fa-palette"></i>
+        </div>
+        <div class="stat-value">{{ total_artworks }}</div>
+        <div class="stat-label">등록된 작품</div>
+        <span class="stat-change positive">+5 이번 주</span>
+    </div>
+    
+    <div class="stat-card visitors">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-value">1,234</div>
+        <div class="stat-label">이번 달 방문자</div>
+        <span class="stat-change positive">+12.5%</span>
+    </div>
+</div>
+
+<!-- Current Exhibition -->
+{% if current_exhibitions %}
+<div class="current-exhibition">
+    <div class="exhibition-label">현재 진행중인 전시</div>
+    {% for exhibition in current_exhibitions %}
+    <div class="exhibition-title">{{ exhibition.title }}</div>
+    <div class="exhibition-period">
+        {{ exhibition.start_date|date:"Y.m.d" }} - {{ exhibition.end_date|date:"Y.m.d" }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h3 class="quick-actions-title">빠른 작업</h3>
+    <div class="actions-grid">
+        <a href="{% url 'gallery:artist_create' %}" class="action-btn">
+            <i class="fas fa-user-plus"></i>
+            <span>작가 등록</span>
+        </a>
+        <a href="{% url 'gallery:exhibition_create' %}" class="action-btn">
+            <i class="fas fa-calendar-plus"></i>
+            <span>전시 등록</span>
+        </a>
+        <a href="{% url 'gallery:artwork_create' %}" class="action-btn">
+            <i class="fas fa-plus-square"></i>
+            <span>작품 등록</span>
+        </a>
+        <a href="/" class="action-btn">
+            <i class="fas fa-globe"></i>
+            <span>웹사이트 보기</span>
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Recent Artists -->
+    <div class="recent-section">
+        <div class="section-header">
+            <h3 class="section-title">최근 등록된 작가</h3>
+            <a href="{% url 'gallery:artist_manage_list' %}" class="view-all-btn">
+                전체 보기 <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="item-list">
+            {% for artist in recent_artists %}
+            <a href="{% url 'gallery:artist_edit' artist.pk %}" class="item-row">
+                {% if artist.profile_image %}
+                <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}" class="item-image">
+                {% else %}
+                <div class="item-image">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <div class="item-info">
+                    <div class="item-name">{{ artist.name }}</div>
+                    <div class="item-meta">
+                        {% if artist.birth_year %}{{ artist.birth_year }}년생{% endif %}
+                        {% if artist.is_exclusive %} · 전속작가{% endif %}
+                    </div>
+                </div>
+                {% if artist.is_exclusive %}
+                <span class="item-badge">전속</span>
+                {% endif %}
+            </a>
+            {% empty %}
+            <p class="text-muted text-center py-3">등록된 작가가 없습니다.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Recent Exhibitions -->
+    <div class="recent-section">
+        <div class="section-header">
+            <h3 class="section-title">최근 전시</h3>
+            <a href="{% url 'gallery:exhibition_manage_list' %}" class="view-all-btn">
+                전체 보기 <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="item-list">
+            {% for exhibition in recent_exhibitions %}
+            <a href="{% url 'gallery:exhibition_edit' exhibition.pk %}" class="item-row">
+                {% if exhibition.poster_image %}
+                <img src="{{ exhibition.poster_image.url }}" alt="{{ exhibition.title }}" class="item-image">
+                {% else %}
+                <div class="item-image">
+                    <i class="fas fa-images"></i>
+                </div>
+                {% endif %}
+                <div class="item-info">
+                    <div class="item-name">{{ exhibition.title }}</div>
+                    <div class="item-meta">
+                        {{ exhibition.start_date|date:"Y.m.d" }} - {{ exhibition.end_date|date:"Y.m.d" }}
+                    </div>
+                </div>
+                {% if exhibition.is_current %}
+                <span class="item-badge">진행중</span>
+                {% endif %}
+            </a>
+            {% empty %}
+            <p class="text-muted text-center py-3">등록된 전시가 없습니다.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dashboard specific scripts if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any dashboard-specific functionality here
+    });
+</script>
+{% endblock %}

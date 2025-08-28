@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.gallery',
     'apps.interaction',
     'apps.moderation',
+    'apps.adminpanel',
 ]
 
 # Django 5.0의 경우 추가 앱
@@ -311,6 +312,11 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# 로그인 설정
+LOGIN_URL = '/manage/login/'
+LOGIN_REDIRECT_URL = '/manage/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Email 설정
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'

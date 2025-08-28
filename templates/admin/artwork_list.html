@@ -1,0 +1,779 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}작품 관리 - 하나아트갤러리 관리자{% endblock %}
+
+{% block header_title %}작품 관리{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Filter Section */
+    .filter-section {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .filter-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .filter-select, .filter-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: var(--transition);
+        background: var(--white);
+    }
+    
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+    
+    .btn-filter {
+        padding: 0.75rem 1.5rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-filter:hover {
+        background: #d01920;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+    }
+    
+    .btn-reset {
+        padding: 0.75rem 1.5rem;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-reset:hover {
+        background: var(--gray-200);
+        border-color: var(--gray-400);
+    }
+    
+    /* Statistics */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-top: 0.25rem;
+    }
+    
+    /* Artwork Grid */
+    .artwork-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .artwork-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .artwork-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        border-color: #cbd5e1;
+    }
+    
+    .artwork-image-container {
+        position: relative;
+        padding-bottom: 100%;
+        background: var(--gray-100);
+        overflow: hidden;
+    }
+    
+    .artwork-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .artwork-card:hover .artwork-image {
+        transform: scale(1.1);
+    }
+    
+    .artwork-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .artwork-card:hover .artwork-overlay {
+        opacity: 1;
+    }
+    
+    .artwork-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(10px);
+        z-index: 2;
+    }
+    
+    .status-available {
+        background: rgba(67, 233, 123, 0.9);
+        color: white;
+    }
+    
+    .status-sold {
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+    }
+    
+    .status-reserved {
+        background: rgba(251, 191, 36, 0.9);
+        color: white;
+    }
+    
+    .artwork-quick-actions {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+    
+    .artwork-card:hover .artwork-quick-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .quick-action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        text-decoration: none;
+    }
+    
+    .quick-action-btn:hover {
+        background: white;
+        transform: scale(1.05);
+    }
+    
+    .quick-action-btn.edit {
+        color: var(--primary-color);
+    }
+    
+    .quick-action-btn.delete {
+        color: #ef4444;
+    }
+    
+    .artwork-info {
+        padding: 1.25rem;
+    }
+    
+    .artwork-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .artwork-artist {
+        font-size: 0.9rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .artwork-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+        color: #718096;
+        margin-bottom: 0.75rem;
+    }
+    
+    .artwork-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* View Toggle */
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .view-btn {
+        padding: 0.5rem 1rem;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #4a5568;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .view-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: transparent;
+    }
+    
+    .view-btn:hover:not(.active) {
+        border-color: #cbd5e0;
+        background: #f7fafc;
+    }
+    
+    /* List View */
+    .artwork-list {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .list-header {
+        display: grid;
+        grid-template-columns: 80px 2fr 1fr 1fr 1fr 150px;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .list-item {
+        display: grid;
+        grid-template-columns: 80px 2fr 1fr 1fr 1fr 150px;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .list-item:hover {
+        background: #f7fafc;
+    }
+    
+    .list-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #e2e8f0;
+    }
+    
+    .list-title {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .list-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    .empty-icon {
+        font-size: 6rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-text {
+        color: #718096;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .artwork-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+        
+        .filter-row {
+            flex-direction: column;
+        }
+        
+        .filter-item {
+            width: 100%;
+        }
+        
+        .list-header, .list-item {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        .list-header {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Section -->
+<div class="filter-section">
+    <div class="filter-row">
+        <div class="filter-item">
+            <div class="filter-label">작가</div>
+            <select class="filter-select" id="filterArtist">
+                <option value="">모든 작가</option>
+                {% for artist in artists %}
+                <option value="{{ artist.id }}">{{ artist.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-item">
+            <div class="filter-label">상태</div>
+            <select class="filter-select" id="filterStatus">
+                <option value="">모든 상태</option>
+                <option value="available">판매 가능</option>
+                <option value="sold">판매 완료</option>
+                <option value="reserved">예약중</option>
+            </select>
+        </div>
+        
+        <div class="filter-item">
+            <div class="filter-label">가격대</div>
+            <select class="filter-select" id="filterPrice">
+                <option value="">전체 가격</option>
+                <option value="0-100">~100만원</option>
+                <option value="100-300">100-300만원</option>
+                <option value="300-500">300-500만원</option>
+                <option value="500+">500만원 이상</option>
+            </select>
+        </div>
+        
+        <div class="filter-item">
+            <div class="filter-label">검색</div>
+            <input type="text" class="filter-input" placeholder="작품명 검색..." id="searchInput">
+        </div>
+        
+        <div class="filter-actions">
+            <button class="btn-filter" onclick="applyFilters()">
+                <i class="fas fa-filter"></i> 필터 적용
+            </button>
+            <button class="btn-reset" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> 초기화
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-value">{{ page_obj.paginator.count }}</div>
+        <div class="stat-label">전체 작품</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ available_count|default:0 }}</div>
+        <div class="stat-label">판매 가능</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ sold_count|default:0 }}</div>
+        <div class="stat-label">판매 완료</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ reserved_count|default:0 }}</div>
+        <div class="stat-label">예약중</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ artists|length }}</div>
+        <div class="stat-label">참여 작가</div>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('grid')">
+            <i class="fas fa-th"></i> 그리드
+        </button>
+        <button class="view-btn" onclick="setView('list')">
+            <i class="fas fa-list"></i> 리스트
+        </button>
+    </div>
+    
+    <a href="{% url 'gallery:artwork_create' %}" class="btn-modern btn-primary-modern">
+        <i class="fas fa-plus"></i>
+        새 작품 등록
+    </a>
+</div>
+
+<!-- Artwork Grid View -->
+<div class="artwork-grid" id="gridView">
+    {% for artwork in page_obj %}
+    <div class="artwork-card" data-artist="{{ artwork.artist.id }}" data-price="{{ artwork.price|default:0 }}">
+        <div class="artwork-image-container">
+            {% if artwork.main_image %}
+            <img src="{{ artwork.main_image.url }}" alt="{{ artwork.title }}" class="artwork-image">
+            {% else %}
+            <div class="artwork-image d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #edf2f7 0%, #cbd5e0 100%);">
+                <i class="fas fa-image fa-3x" style="color: #a0aec0;"></i>
+            </div>
+            {% endif %}
+            
+            <div class="artwork-overlay"></div>
+            
+            {% if artwork.is_sold %}
+            <span class="artwork-status status-sold">SOLD</span>
+            {% elif artwork.is_for_sale %}
+            <span class="artwork-status status-available">판매중</span>
+            {% else %}
+            <span class="artwork-status status-reserved">비매품</span>
+            {% endif %}
+            
+            <div class="artwork-quick-actions">
+                <a href="{% url 'gallery:artwork_edit' artwork.pk %}" class="quick-action-btn edit">
+                    <i class="fas fa-edit"></i> 수정
+                </a>
+                <button onclick="deleteArtwork({{ artwork.pk }}, '{{ artwork.title|escapejs }}')" class="quick-action-btn delete">
+                    <i class="fas fa-trash"></i> 삭제
+                </button>
+            </div>
+        </div>
+        
+        <div class="artwork-info">
+            <h3 class="artwork-title" title="{{ artwork.title }}">{{ artwork.title }}</h3>
+            <div class="artwork-artist">{{ artwork.artist.name }}</div>
+            <div class="artwork-details">
+                {% if artwork.year %}<span>{{ artwork.year }}년</span>{% endif %}
+                {% if artwork.medium %}<span>{{ artwork.medium }}</span>{% endif %}
+                {% if artwork.size %}<span>{{ artwork.size }}</span>{% endif %}
+            </div>
+            {% if artwork.price %}
+            <div class="artwork-price">₩ {{ artwork.price|floatformat:0 }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <!-- Empty state will be shown below -->
+    {% endfor %}
+</div>
+
+<!-- Artwork List View (Hidden by default) -->
+<div class="artwork-list" id="listView" style="display: none;">
+    <div class="list-header">
+        <div>이미지</div>
+        <div>작품명</div>
+        <div>작가</div>
+        <div>가격</div>
+        <div>상태</div>
+        <div>관리</div>
+    </div>
+    {% for artwork in page_obj %}
+    <div class="list-item">
+        {% if artwork.main_image %}
+        <img src="{{ artwork.main_image.url }}" alt="{{ artwork.title }}" class="list-image">
+        {% else %}
+        <div class="list-image d-flex align-items-center justify-content-center" style="background: #e2e8f0;">
+            <i class="fas fa-image" style="color: #a0aec0;"></i>
+        </div>
+        {% endif %}
+        
+        <div class="list-title">{{ artwork.title }}</div>
+        <div>{{ artwork.artist.name }}</div>
+        <div>{% if artwork.price %}₩ {{ artwork.price|floatformat:0 }}{% else %}-{% endif %}</div>
+        <div>
+            {% if artwork.is_sold %}
+            <span class="badge-status" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;">판매완료</span>
+            {% elif artwork.is_for_sale %}
+            <span class="badge-status" style="background: rgba(67, 233, 123, 0.1); color: #22c55e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;">판매중</span>
+            {% else %}
+            <span class="badge-status" style="background: rgba(251, 191, 36, 0.1); color: #f59e0b; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;">비매품</span>
+            {% endif %}
+        </div>
+        <div class="list-actions">
+            <a href="{% url 'gallery:artwork_edit' artwork.pk %}" class="quick-action-btn edit" style="padding: 0.5rem;">
+                <i class="fas fa-edit"></i>
+            </a>
+            <button onclick="deleteArtwork({{ artwork.pk }}, '{{ artwork.title|escapejs }}')" class="quick-action-btn delete" style="padding: 0.5rem;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not page_obj %}
+<!-- Empty State -->
+<div class="empty-state">
+    <div class="empty-icon">
+        <i class="fas fa-palette"></i>
+    </div>
+    <h2 class="empty-title">등록된 작품이 없습니다</h2>
+    <p class="empty-text">새로운 작품을 등록하여 갤러리를 시작하세요</p>
+    <a href="{% url 'gallery:artwork_create' %}" class="btn-modern btn-primary-modern">
+        <i class="fas fa-plus"></i>
+        첫 작품 등록하기
+    </a>
+</div>
+{% endif %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-5">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteArtwork(id, title) {
+    hanaModal.confirmDelete(title, function() {
+        showLoading();
+        
+        fetch(`/gallery/admin/artworks/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                hanaToast.success(data.message);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                hanaToast.error(data.message || '삭제에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            hanaToast.error('삭제 중 오류가 발생했습니다.');
+            console.error('Error:', error);
+        });
+    });
+}
+
+function setView(view) {
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const viewBtns = document.querySelectorAll('.view-btn');
+    
+    viewBtns.forEach(btn => btn.classList.remove('active'));
+    
+    if (view === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        viewBtns[0].classList.add('active');
+    } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        viewBtns[1].classList.add('active');
+    }
+}
+
+function applyFilters() {
+    const artist = document.getElementById('filterArtist').value;
+    const status = document.getElementById('filterStatus').value;
+    const price = document.getElementById('filterPrice').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    
+    const cards = document.querySelectorAll('.artwork-card');
+    
+    cards.forEach(card => {
+        let show = true;
+        
+        // Artist filter
+        if (artist && card.dataset.artist !== artist) {
+            show = false;
+        }
+        
+        // Search filter
+        if (search) {
+            const title = card.querySelector('.artwork-title').textContent.toLowerCase();
+            const artistName = card.querySelector('.artwork-artist').textContent.toLowerCase();
+            if (!title.includes(search) && !artistName.includes(search)) {
+                show = false;
+            }
+        }
+        
+        card.style.display = show ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('filterArtist').value = '';
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterPrice').value = '';
+    document.getElementById('searchInput').value = '';
+    
+    const cards = document.querySelectorAll('.artwork-card');
+    cards.forEach(card => {
+        card.style.display = '';
+    });
+}
+
+// Real-time search
+document.getElementById('searchInput').addEventListener('input', function() {
+    applyFilters();
+});
+</script>
+{% endblock %}

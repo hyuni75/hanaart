@@ -1,0 +1,667 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}관리자 - 하나아트갤러리{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Admin Styles -->
+    <style>
+        :root {
+            --primary-color: #e51c23;
+            --dark-color: #1a1a1a;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e4e4e7;
+            --gray-300: #d4d4d8;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --gray-700: #3f3f46;
+            --gray-800: #27272a;
+            --gray-900: #18181b;
+            --white: #ffffff;
+            --border-color: #d4d4d8;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --transition: all 0.2s ease;
+            --border-radius: 6px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Layout Container */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .admin-sidebar {
+            width: 240px;
+            background: var(--gray-800);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: var(--transition);
+        }
+        
+        .admin-sidebar.collapsed {
+            width: 64px;
+        }
+        
+        /* Logo */
+        .sidebar-logo {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 64px;
+            background: var(--gray-900);
+        }
+        
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--white);
+        }
+        
+        .logo-img {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            transition: var(--transition);
+        }
+        
+        .admin-sidebar.collapsed .logo-img {
+            margin-right: 0;
+        }
+        
+        .logo-text {
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            transition: var(--transition);
+            color: var(--white);
+        }
+        
+        .admin-sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        /* Navigation Menu */
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-title {
+            padding: 0 1.25rem;
+            margin-bottom: 0.5rem;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-400);
+            transition: var(--transition);
+        }
+        
+        .admin-sidebar.collapsed .nav-title {
+            display: none;
+        }
+        
+        .nav-item {
+            margin: 2px 8px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.625rem 1rem;
+            color: var(--gray-300);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background: var(--gray-700);
+            color: var(--white);
+        }
+        
+        .nav-link.active {
+            background: var(--primary-color);
+            color: var(--white);
+            font-weight: 500;
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .admin-sidebar.collapsed .nav-icon {
+            margin-right: 0;
+            font-size: 18px;
+        }
+        
+        .nav-text {
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        
+        .admin-sidebar.collapsed .nav-text {
+            display: none;
+        }
+        
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-700);
+        }
+        
+        .toggle-btn {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--gray-700);
+            border: 1px solid var(--gray-600);
+            border-radius: 6px;
+            color: var(--gray-300);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toggle-btn:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+        
+        /* Main Content */
+        .admin-main {
+            flex: 1;
+            margin-left: 240px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+        
+        .admin-main.expanded {
+            margin-left: 64px;
+        }
+        
+        /* Top Bar */
+        .admin-topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .topbar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .topbar-btn {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            color: var(--gray-700);
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .topbar-btn:hover {
+            background: var(--gray-100);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
+        }
+        
+        .btn-primary-admin {
+            background: var(--primary-color);
+            color: var(--white);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-primary-admin:hover {
+            background: #d01920;
+            border-color: #d01920;
+            color: var(--white);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--gray-100);
+            border-radius: 6px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--gray-900);
+        }
+        
+        .user-role {
+            font-size: 11px;
+            color: var(--gray-600);
+        }
+        
+        /* Content Area */
+        .admin-content {
+            flex: 1;
+            padding: 1.5rem;
+        }
+        
+        /* Cards */
+        .card-admin {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .card-header-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        /* Tables */
+        .table-admin {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table-admin th {
+            background: var(--gray-100);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .table-admin td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+        
+        .table-admin tr:hover {
+            background: var(--gray-50);
+        }
+        
+        /* Buttons */
+        .btn-admin {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .btn-sm-admin {
+            padding: 0.375rem 0.75rem;
+            font-size: 13px;
+        }
+        
+        .btn-icon {
+            padding: 0.5rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                width: 240px !important;
+            }
+            
+            .admin-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .admin-main {
+                margin-left: 0 !important;
+            }
+            
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-logo">
+                <a href="{% url 'gallery:admin_dashboard' %}" class="logo-link">
+                    <img src="{% static 'images/gallery/ci_hana.png' %}" alt="HANA" class="logo-img">
+                    <span class="logo-text">관리자</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-title">메인</div>
+                    <div class="nav-item">
+                        <a href="{% url 'gallery:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-home"></i></span>
+                            <span class="nav-text">대시보드</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">갤러리 관리</div>
+                    <div class="nav-item">
+                        <a href="{% url 'gallery:artist_manage_list' %}" class="nav-link {% if 'artist' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-user-tie"></i></span>
+                            <span class="nav-text">작가 관리</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'gallery:artwork_manage_list' %}" class="nav-link {% if 'artwork' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-palette"></i></span>
+                            <span class="nav-text">작품 관리</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'gallery:exhibition_manage_list' %}" class="nav-link {% if 'exhibition' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-images"></i></span>
+                            <span class="nav-text">전시 관리</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">기타</div>
+                    <div class="nav-item">
+                        <a href="/" target="_blank" class="nav-link">
+                            <span class="nav-icon"><i class="fas fa-external-link-alt"></i></span>
+                            <span class="nav-text">사이트 보기</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main" id="adminMain">
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <button class="topbar-btn mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <h1 class="topbar-title">{% block header_title %}관리자{% endblock %}</h1>
+                
+                <div class="topbar-actions">
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">{{ user.username|default:"관리자" }}</span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="{% url 'adminpanel:logout' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="topbar-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            로그아웃
+                        </button>
+                    </form>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="admin-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Common Modal Container -->
+    <div id="hanaModalContainer"></div>
+    
+    <!-- Common Toast Container -->
+    <div id="hanaToastContainer"></div>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+    <script src="{% static 'js/toast.js' %}"></script>
+    
+    <script>
+        // Initialize
+        window.hanaModal = new HanaModal();
+        window.hanaToast = new HanaToast();
+        
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const main = document.getElementById('adminMain');
+            const icon = document.getElementById('toggleIcon');
+            
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                icon.className = 'fas fa-chevron-left';
+            }
+            
+            // Save state
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('adminSidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+        
+        // Restore sidebar state
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (collapsed) {
+                document.getElementById('adminSidebar').classList.add('collapsed');
+                document.getElementById('adminMain').classList.add('expanded');
+                document.getElementById('toggleIcon').className = 'fas fa-chevron-right';
+            }
+        });
+        
+        // Loading functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+        
+        // CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

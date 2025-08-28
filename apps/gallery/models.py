@@ -1,5 +1,7 @@
 from django.db import models
 from apps.core.models import TimeStampedModel
+from .utils import ImageOptimizer
+import os
 
 class Artist(TimeStampedModel):
     """작가 모델"""
@@ -30,6 +32,21 @@ class Artist(TimeStampedModel):
     
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # 프로필 이미지 최적화
+        if self.profile_image:
+            # 이미지가 변경되었는지 확인
+            try:
+                old_instance = Artist.objects.get(pk=self.pk)
+                if old_instance.profile_image != self.profile_image:
+                    # 이미지 최적화 (최대 800x800)
+                    self.profile_image = ImageOptimizer.create_medium(self.profile_image)
+            except Artist.DoesNotExist:
+                # 새 객체인 경우
+                self.profile_image = ImageOptimizer.create_medium(self.profile_image)
+        
+        super().save(*args, **kwargs)
 
 class Exhibition(TimeStampedModel):
     """전시 모델"""

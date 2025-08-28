@@ -1,0 +1,463 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}작가 관리 - 하나아트갤러리 관리자{% endblock %}
+
+{% block header_title %}작가 관리{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stats Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: var(--transition);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-top: 0.25rem;
+    }
+    
+    /* Search Bar */
+    .search-bar {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .search-input {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+    }
+    
+    .search-input input {
+        width: 100%;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .search-input input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .search-input i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+    }
+    
+    .btn-add {
+        padding: 0.5rem 1rem;
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+    }
+    
+    .btn-add:hover {
+        background: #d01920;
+        color: var(--white);
+    }
+    
+    /* Artist Grid */
+    .artist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .artist-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .artist-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .artist-image-container {
+        position: relative;
+        padding-bottom: 75%;
+        background: var(--gray-100);
+        overflow: hidden;
+    }
+    
+    .artist-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+    
+    .artist-card:hover .artist-image {
+        transform: scale(1.05);
+    }
+    
+    .no-image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        color: var(--gray-400);
+    }
+    
+    .artist-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        background: var(--primary-color);
+        color: var(--white);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .artist-info {
+        padding: 1.25rem;
+    }
+    
+    .artist-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+    
+    .artist-details {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+    }
+    
+    .artist-stats {
+        display: flex;
+        gap: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--gray-200);
+        font-size: 0.875rem;
+    }
+    
+    .artist-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: var(--gray-600);
+    }
+    
+    .artist-stat strong {
+        color: var(--gray-900);
+    }
+    
+    .artist-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: var(--gray-50);
+        border-top: 1px solid var(--gray-200);
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        text-align: center;
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        background: var(--white);
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .action-btn:hover {
+        background: var(--gray-100);
+        color: var(--gray-900);
+    }
+    
+    .action-btn.edit {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .action-btn.edit:hover {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+    
+    .action-btn.delete {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .action-btn.delete:hover {
+        background: #dc3545;
+        color: var(--white);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-text {
+        color: var(--gray-600);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-value">{{ page_obj.paginator.count }}</div>
+        <div class="stat-label">전체 작가</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ exclusive_count|default:0 }}</div>
+        <div class="stat-label">전속 작가</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ regular_count|default:0 }}</div>
+        <div class="stat-label">일반 작가</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ active_count|default:0 }}</div>
+        <div class="stat-label">활동중</div>
+    </div>
+</div>
+
+<!-- Search and Actions Bar -->
+<div class="search-bar">
+    <div class="search-input">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="작가 이름으로 검색..." id="searchInput">
+    </div>
+    
+    <a href="{% url 'gallery:artist_create' %}" class="btn-add">
+        <i class="fas fa-plus"></i>
+        새 작가 등록
+    </a>
+</div>
+
+<!-- Artist Grid -->
+<div class="artist-grid" id="artistGrid">
+    {% for artist in page_obj %}
+    <div class="artist-card" data-name="{{ artist.name|lower }}">
+        <div class="artist-image-container">
+            {% if artist.profile_image %}
+            <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}" class="artist-image">
+            {% else %}
+            <div class="no-image">
+                <i class="fas fa-user-artist"></i>
+            </div>
+            {% endif %}
+            
+            {% if artist.is_exclusive %}
+            <span class="artist-badge">전속작가</span>
+            {% endif %}
+        </div>
+        
+        <div class="artist-info">
+            <h3 class="artist-name">{{ artist.name }}</h3>
+            <div class="artist-details">
+                {% if artist.birth_year %}{{ artist.birth_year }}년생{% endif %}
+                {% if artist.name_en %}<br>{{ artist.name_en }}{% endif %}
+            </div>
+            
+            <div class="artist-stats">
+                <div class="artist-stat">
+                    <i class="fas fa-palette"></i>
+                    <strong>{{ artist.artworks.count }}</strong>작품
+                </div>
+                <div class="artist-stat">
+                    <i class="fas fa-images"></i>
+                    <strong>{{ artist.exhibitions.count }}</strong>전시
+                </div>
+            </div>
+        </div>
+        
+        <div class="artist-actions">
+            <a href="{% url 'gallery:artist_edit' artist.pk %}" class="action-btn edit">
+                <i class="fas fa-edit"></i> 수정
+            </a>
+            <button onclick="deleteArtist({{ artist.pk }}, '{{ artist.name|escapejs }}')" class="action-btn delete">
+                <i class="fas fa-trash"></i> 삭제
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <!-- Empty state will be shown below -->
+    {% endfor %}
+</div>
+
+{% if not page_obj %}
+<!-- Empty State -->
+<div class="empty-state">
+    <div class="empty-icon">
+        <i class="fas fa-user-artist"></i>
+    </div>
+    <h2 class="empty-title">등록된 작가가 없습니다</h2>
+    <p class="empty-text">새로운 작가를 등록하여 시작하세요</p>
+    <a href="{% url 'gallery:artist_create' %}" class="btn-add">
+        <i class="fas fa-plus"></i>
+        첫 작가 등록하기
+    </a>
+</div>
+{% endif %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteArtist(id, name) {
+    hanaModal.confirmDelete(name + ' 작가', function() {
+        showLoading();
+        
+        fetch(`/gallery/admin/artists/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                hanaToast.success(data.message);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                hanaToast.error(data.message || '삭제에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            hanaToast.error('삭제 중 오류가 발생했습니다.');
+            console.error('Error:', error);
+        });
+    });
+}
+
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.artist-card');
+    
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        if (name.includes(searchTerm)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

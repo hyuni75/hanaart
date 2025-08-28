@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('apps.core.urls')),
     path('', include('apps.navigator.urls')),
     path('', include('apps.gallery.urls')),
+    path('', include('apps.adminpanel.urls')),
     path('pages/', include('apps.pagebuilder.urls')),
     path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),

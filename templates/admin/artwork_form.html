@@ -1,0 +1,653 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - 하나아트갤러리 관리자{% endblock %}
+
+{% block header_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<!-- Year Picker CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/yearpicker@1.1.0/dist/yearpicker.min.css">
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .form-body {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.8rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 14px;
+    }
+    
+    .required-mark {
+        color: #e74c3c;
+        margin-left: 3px;
+    }
+    
+    .form-control, .form-select {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: var(--transition);
+        background: var(--white);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 28, 35, 0.1);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .form-check {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: var(--gray-100);
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+    
+    .form-check:hover {
+        background: var(--gray-200);
+    }
+    
+    .form-check-input {
+        width: 1.3rem;
+        height: 1.3rem;
+        margin-right: 0.8rem;
+        cursor: pointer;
+    }
+    
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+    
+    .image-upload-area {
+        border: 2px dashed var(--gray-400);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        background: var(--gray-100);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .image-upload-area:hover {
+        background: var(--gray-200);
+        border-color: var(--primary-color);
+    }
+    
+    .image-upload-icon {
+        font-size: 2.5rem;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+    
+    .image-upload-text {
+        color: var(--gray-700);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .image-upload-hint {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+    
+    .image-preview {
+        margin-top: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow);
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .price-input-group {
+        position: relative;
+    }
+    
+    .price-input-group .form-control {
+        padding-left: 2rem;
+    }
+    
+    .price-currency {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-700);
+        font-weight: 500;
+        z-index: 1;
+    }
+    
+    .help-text {
+        color: var(--gray-600);
+        font-size: 0.75rem;
+        margin-top: 0.3rem;
+    }
+    
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .btn-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-save {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+    
+    .btn-save:hover {
+        background: #d01920;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(229, 28, 35, 0.2);
+    }
+    
+    .btn-cancel {
+        background: var(--gray-600);
+        color: var(--white);
+    }
+    
+    .btn-cancel:hover {
+        background: var(--gray-700);
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .form-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+        
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<style>
+    /* Year Picker Custom Styles */
+    .yearpicker-container {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        border-radius: 6px;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .yearpicker-header {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+    
+    .yearpicker-items .yearpicker-selected {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+    
+    .yearpicker-items div:hover {
+        background: var(--gray-100);
+    }
+    
+    .year-input-wrapper {
+        position: relative;
+    }
+    
+    .year-input-wrapper .form-control {
+        padding-right: 2.5rem;
+    }
+    
+    .year-input-wrapper .year-icon {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="form-body">
+        {% csrf_token %}
+            <!-- 기본 정보 -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    기본 정보
+                </h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.title.id_for_label }}">
+                                작품명 <span class="required-mark">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="error-message">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.title_en.id_for_label }}">
+                                영문 작품명
+                            </label>
+                            {{ form.title_en }}
+                            {% if form.title_en.errors %}
+                                <div class="error-message">{{ form.title_en.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.artist.id_for_label }}">
+                                작가 <span class="required-mark">*</span>
+                            </label>
+                            {{ form.artist }}
+                            {% if form.artist.errors %}
+                                <div class="error-message">{{ form.artist.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.artwork_type.id_for_label }}">
+                                작품 유형
+                            </label>
+                            {{ form.artwork_type }}
+                            {% if form.artwork_type.errors %}
+                                <div class="error-message">{{ form.artwork_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 작품 세부사항 -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-paint-brush"></i>
+                    작품 세부사항
+                </h2>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.year.id_for_label }}">
+                                제작년도
+                            </label>
+                            <div class="year-input-wrapper">
+                                {{ form.year }}
+                                <i class="fas fa-calendar-alt year-icon"></i>
+                            </div>
+                            {% if form.year.errors %}
+                                <div class="error-message">{{ form.year.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.year.help_text %}
+                                <div class="help-text">{{ form.year.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.medium.id_for_label }}">
+                                재료/기법
+                            </label>
+                            {{ form.medium }}
+                            <div class="help-text">예: Oil on canvas</div>
+                            {% if form.medium.errors %}
+                                <div class="error-message">{{ form.medium.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.size.id_for_label }}">
+                                크기
+                            </label>
+                            {{ form.size }}
+                            <div class="help-text">예: 100×80cm</div>
+                            {% if form.size.errors %}
+                                <div class="error-message">{{ form.size.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.edition.id_for_label }}">
+                                에디션
+                            </label>
+                            {{ form.edition }}
+                            <div class="help-text">예: 1/10</div>
+                            {% if form.edition.errors %}
+                                <div class="error-message">{{ form.edition.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        작품 설명
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="error-message">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 이미지 -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-image"></i>
+                    작품 이미지
+                </h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.main_image.id_for_label }}">
+                        메인 이미지
+                    </label>
+                    
+                    <div class="image-upload-area" onclick="document.getElementById('{{ form.main_image.id_for_label }}').click()">
+                        <div class="image-upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="image-upload-text">클릭하여 이미지 업로드</div>
+                        <div class="image-upload-hint">JPG, PNG (최대 10MB, 권장 1200×1200px)</div>
+                    </div>
+                    
+                    {{ form.main_image }}
+                    
+                    {% if artwork and artwork.main_image %}
+                        <div class="image-preview">
+                            <img src="{{ artwork.main_image.url }}" alt="현재 이미지">
+                        </div>
+                    {% endif %}
+                    
+                    {% if form.main_image.errors %}
+                        <div class="error-message">{{ form.main_image.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 판매 정보 -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-tag"></i>
+                    판매 정보
+                </h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.price.id_for_label }}">
+                                가격
+                            </label>
+                            <div class="price-input-group">
+                                <span class="price-currency">₩</span>
+                                {{ form.price }}
+                            </div>
+                            <div class="help-text">판매 가격을 원 단위로 입력하세요</div>
+                            {% if form.price.errors %}
+                                <div class="error-message">{{ form.price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.display_order.id_for_label }}">
+                                표시 순서
+                            </label>
+                            {{ form.display_order }}
+                            <div class="help-text">숫자가 작을수록 먼저 표시됩니다</div>
+                            {% if form.display_order.errors %}
+                                <div class="error-message">{{ form.display_order.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            {{ form.is_for_sale }}
+                            <label class="form-check-label" for="{{ form.is_for_sale.id_for_label }}">
+                                판매 가능
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            {{ form.is_sold }}
+                            <label class="form-check-label" for="{{ form.is_sold.id_for_label }}">
+                                판매 완료
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            {{ form.is_featured }}
+                            <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                                주요 작품
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            {{ form.is_published }}
+                            <label class="form-check-label" for="{{ form.is_published.id_for_label }}">
+                                공개
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 전시 연결 -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-calendar"></i>
+                    전시 연결
+                </h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.exhibitions.id_for_label }}">
+                        관련 전시
+                    </label>
+                    {{ form.exhibitions }}
+                    <div class="help-text">Ctrl/Cmd 키를 누르고 여러 전시를 선택할 수 있습니다</div>
+                    {% if form.exhibitions.errors %}
+                        <div class="error-message">{{ form.exhibitions.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 액션 버튼 -->
+            <div class="form-actions">
+                <a href="{% url 'gallery:artwork_manage_list' %}" class="btn-modern btn-cancel">
+                    <i class="fas fa-arrow-left"></i>
+                    취소
+                </a>
+                <button type="submit" class="btn-modern btn-save">
+                    <i class="fas fa-save"></i>
+                    저장
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Year Picker JS -->
+<script src="https://cdn.jsdelivr.net/npm/yearpicker@1.1.0/dist/yearpicker.min.js"></script>
+
+<script>
+// 이미지 미리보기
+document.getElementById('{{ form.main_image.id_for_label }}')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let preview = document.querySelector('.image-preview');
+            if (!preview) {
+                preview = document.createElement('div');
+                preview.className = 'image-preview';
+                document.querySelector('.image-upload-area').parentElement.appendChild(preview);
+            }
+            preview.innerHTML = `<img src="${e.target.result}" alt="미리보기">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// 파일 input 숨기기
+document.getElementById('{{ form.main_image.id_for_label }}').style.display = 'none';
+
+// Year Picker 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    const yearInput = document.getElementById('{{ form.year.id_for_label }}');
+    if (yearInput) {
+        // Create year dropdown select
+        const currentYear = new Date().getFullYear();
+        const startYear = 1900;
+        const endYear = currentYear + 10;
+        
+        // Create custom year selector
+        const yearSelect = document.createElement('select');
+        yearSelect.className = 'form-select';
+        yearSelect.id = yearInput.id + '_select';
+        
+        // Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = '-- 제작년도 선택 --';
+        yearSelect.appendChild(placeholderOption);
+        
+        // Add year options (from current year to past)
+        for (let year = endYear; year >= startYear; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year + '년';
+            if (yearInput.value == year) {
+                option.selected = true;
+            }
+            yearSelect.appendChild(option);
+        }
+        
+        // Replace input with select
+        yearInput.style.display = 'none';
+        yearInput.parentNode.insertBefore(yearSelect, yearInput.nextSibling);
+        
+        // Sync select with hidden input
+        yearSelect.addEventListener('change', function() {
+            yearInput.value = this.value;
+        });
+        
+        // Remove the calendar icon since we're using a select
+        const yearIcon = yearInput.parentNode.querySelector('.year-icon');
+        if (yearIcon) {
+            yearIcon.style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}

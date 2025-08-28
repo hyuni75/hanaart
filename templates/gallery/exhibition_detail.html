@@ -1,921 +1,491 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% load humanize %}
 
-{% block title %}{{ exhibition.title }} - {{ block.super }}{% endblock %}
+{% block title %}{{ exhibition.title }} - 하나아트갤러리{% endblock %}
 
 {% block extra_css %}
 <style>
-/* 전시 히어로 섹션 */
-.exhibition-hero {
-    position: relative;
-    height: 100vh;
-    overflow: hidden;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-}
-
-.hero-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.3;
-    background-size: cover;
-    background-position: center;
-    filter: blur(5px);
-    transform: scale(1.1);
-    transition: transform 10s ease;
-}
-
-.exhibition-hero:hover .hero-background {
-    transform: scale(1.15);
-}
-
-.hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, 
-        rgba(0,0,0,0.3) 0%, 
-        rgba(0,0,0,0.5) 50%, 
-        rgba(0,0,0,0.9) 100%);
-}
-
-.hero-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 100px 0 60px;
-    color: white;
-    z-index: 2;
-}
-
-.hero-content .container {
-    max-width: 1400px;
-}
-
-.exhibition-badge {
-    display: inline-block;
-    padding: 8px 20px;
-    background: rgba(229, 28, 35, 0.9);
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    margin-bottom: 20px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.9; }
-    50% { opacity: 1; }
-}
-
-.exhibition-title {
-    font-size: clamp(3rem, 7vw, 5rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 20px;
-    animation: fadeInUp 1s ease;
-}
-
-.exhibition-subtitle {
-    font-size: 1.5rem;
-    font-weight: 300;
-    opacity: 0.9;
-    margin-bottom: 30px;
-    animation: fadeInUp 1s ease 0.2s backwards;
-}
-
-.exhibition-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    font-size: 1.1rem;
-    animation: fadeInUp 1s ease 0.4s backwards;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.meta-item i {
-    color: #e51c23;
-    font-size: 1.2rem;
-}
-
-/* 스크롤 인디케이터 */
-.scroll-indicator {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-10px); }
-}
-
-/* 전시 소개 섹션 */
-.exhibition-intro {
-    padding: 100px 0;
-    background: white;
-}
-
-.intro-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.intro-text h2 {
-    font-size: 3rem;
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.intro-text h2::after {
-    content: '';
-    position: absolute;
-    bottom: -15px;
-    left: 0;
-    width: 100px;
-    height: 4px;
-    background: #e51c23;
-}
-
-.intro-text p {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: #555;
-}
-
-.intro-image {
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-}
-
-.intro-image img {
-    width: 100%;
-    height: auto;
-    transition: transform 0.5s ease;
-}
-
-.intro-image:hover img {
-    transform: scale(1.05);
-}
-
-/* 참여 작가 섹션 */
-.artists-section {
-    padding: 80px 0;
-    background: #f8f8f8;
-}
-
-.artists-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.artist-chip {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 20px;
-    background: white;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    color: inherit;
-}
-
-.artist-chip:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.artist-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-
-.artist-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.artist-info h4 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.artist-info p {
-    margin: 0;
-    color: #888;
-    font-size: 0.9rem;
-}
-
-/* 작품 갤러리 섹션 */
-.artworks-section {
-    padding: 100px 0;
-    background: white;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.section-header h2 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.filter-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 60px;
-}
-
-.filter-tab {
-    padding: 10px 30px;
-    background: transparent;
-    border: 2px solid #ddd;
-    border-radius: 50px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-tab.active,
-.filter-tab:hover {
-    background: #e51c23;
-    border-color: #e51c23;
-    color: white;
-}
-
-.artworks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 40px;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.artwork-card {
-    position: relative;
-    background: white;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
-}
-
-.artwork-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-}
-
-.artwork-image {
-    position: relative;
-    height: 400px;
-    overflow: hidden;
-    background: #f0f0f0;
-}
-
-.artwork-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-}
-
-.artwork-card:hover .artwork-image img {
-    transform: scale(1.1);
-}
-
-.artwork-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 5px 15px;
-    background: rgba(229, 28, 35, 0.9);
-    color: white;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.artwork-info {
-    padding: 25px;
-}
-
-.artwork-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #222;
-}
-
-.artwork-artist {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.artist-thumb {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #e51c23;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.artwork-details {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.detail-item i {
-    color: #e51c23;
-    font-size: 0.8rem;
-}
-
-/* 전시 정보 섹션 */
-.info-section {
-    padding: 100px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    position: relative;
-    overflow: hidden;
-}
-
-.info-section::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: float 10s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(-30px) rotate(180deg); }
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.info-card {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 40px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.info-card:hover {
-    background: rgba(255,255,255,0.15);
-    transform: translateY(-5px);
-}
-
-.info-card i {
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.info-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-}
-
-.info-card p {
-    font-size: 1.1rem;
-    opacity: 0.95;
-}
-
-/* 라이트박스 */
-.artwork-lightbox {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    z-index: 9999;
-    animation: fadeIn 0.3s ease;
-}
-
-.artwork-lightbox.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.lightbox-content {
-    position: relative;
-    max-width: 90%;
-    max-height: 90%;
-}
-
-.lightbox-content img {
-    width: 100%;
-    height: auto;
-    max-height: 85vh;
-    object-fit: contain;
-    border-radius: 10px;
-}
-
-.lightbox-info {
-    position: absolute;
-    bottom: -60px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: white;
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.lightbox-close:hover {
-    transform: rotate(90deg);
-}
-
-/* 애니메이션 */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* 반응형 */
-@media (max-width: 768px) {
-    .exhibition-title {
-        font-size: 2.5rem;
+    .exhibition-hero {
+        position: relative;
+        height: 100vh;
+        background: #000;
+        overflow: hidden;
     }
     
-    .intro-grid {
-        grid-template-columns: 1fr;
-        gap: 40px;
+    .exhibition-hero-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.4;
+        animation: kenBurns 20s infinite;
+    }
+    
+    @keyframes kenBurns {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .exhibition-hero-content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        padding: 2rem;
+    }
+    
+    .exhibition-title {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .exhibition-subtitle {
+        font-size: 2rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .exhibition-info {
+        font-size: 1.2rem;
+        margin-bottom: 3rem;
+        opacity: 0.8;
+    }
+    
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(-10px); }
+    }
+    
+    .exhibition-content {
+        padding: 80px 0;
+        background: #f8f9fa;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #333;
+    }
+    
+    .exhibition-description {
+        max-width: 800px;
+        margin: 0 auto 80px;
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: #666;
+        text-align: center;
     }
     
     .artworks-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+        margin-bottom: 80px;
     }
     
-    .filter-tabs {
-        flex-wrap: wrap;
+    .artwork-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
-}
+    
+    .artwork-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .artwork-image-container {
+        position: relative;
+        padding-bottom: 100%;
+        overflow: hidden;
+        background: #f0f0f0;
+    }
+    
+    .artwork-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .artwork-card:hover .artwork-image {
+        transform: scale(1.05);
+    }
+    
+    .artwork-info {
+        padding: 25px;
+    }
+    
+    .artwork-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .artwork-artist {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 1rem;
+    }
+    
+    .artwork-details {
+        font-size: 0.95rem;
+        color: #999;
+        line-height: 1.6;
+    }
+    
+    .artwork-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e74c3c;
+        margin-top: 1rem;
+    }
+    
+    .artists-section {
+        background: white;
+        padding: 80px 0;
+    }
+    
+    .artists-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .artist-card {
+        text-align: center;
+        padding: 30px;
+        border-radius: 15px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .artist-card:hover {
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .artist-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 20px;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .artist-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .artist-bio {
+        font-size: 0.95rem;
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    /* Artwork Modal */
+    .artwork-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.95);
+        z-index: 9999;
+        overflow-y: auto;
+    }
+    
+    .artwork-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90vh;
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+    }
+    
+    .modal-image {
+        flex: 1;
+        max-width: 60%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-image img {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+    
+    .modal-info {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.5rem;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        background: #f8f9fa;
+        transform: rotate(90deg);
+    }
+    
+    @media (max-width: 768px) {
+        .exhibition-title {
+            font-size: 2.5rem;
+        }
+        
+        .exhibition-subtitle {
+            font-size: 1.5rem;
+        }
+        
+        .modal-content {
+            flex-direction: column;
+            max-width: 95%;
+            max-height: 95vh;
+        }
+        
+        .modal-image {
+            max-width: 100%;
+        }
+        
+        .artworks-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 {% endblock %}
 
-{% block navbar %}{% endblock %}
-
 {% block content %}
-<!-- 전시 히어로 섹션 -->
-<section class="exhibition-hero">
-    <div class="hero-background" style="background-image: url('{% if exhibition.poster %}{{ exhibition.poster.url }}{% else %}{% static 'images/gallery/ihan_01.jpg' %}{% endif %}')"></div>
-    <div class="hero-overlay"></div>
+<!-- Exhibition Hero -->
+<div class="exhibition-hero">
+    {% if exhibition.poster_image %}
+    <img src="{{ exhibition.poster_image.url }}" alt="{{ exhibition.title }}" class="exhibition-hero-image">
+    {% else %}
+    <div class="exhibition-hero-image" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+    {% endif %}
     
-    <div class="hero-content">
-        <div class="container">
-            <div class="exhibition-badge">
-                {% if exhibition.is_ongoing %}
-                    NOW ON VIEW
-                {% elif exhibition.is_upcoming %}
-                    UPCOMING
-                {% else %}
-                    PAST EXHIBITION
-                {% endif %}
-            </div>
-            
-            <h1 class="exhibition-title">{{ exhibition.title }}</h1>
-            {% if exhibition.title_en %}
-            <p class="exhibition-subtitle">{{ exhibition.title_en }}</p>
-            {% endif %}
-            
-            <div class="exhibition-meta">
-                <div class="meta-item">
-                    <i class="far fa-calendar-alt"></i>
-                    <span>{{ exhibition.start_date|date:"Y.m.d" }} - {{ exhibition.end_date|date:"Y.m.d" }}</span>
-                </div>
-                {% if exhibition.location %}
-                <div class="meta-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>{{ exhibition.location }}</span>
-                </div>
-                {% endif %}
-                {% if exhibition.curator %}
-                <div class="meta-item">
-                    <i class="fas fa-user-tie"></i>
-                    <span>큐레이터: {{ exhibition.curator }}</span>
-                </div>
-                {% endif %}
-            </div>
+    <div class="exhibition-hero-content">
+        <h1 class="exhibition-title">{{ exhibition.title }}</h1>
+        {% if exhibition.title_en %}
+        <h2 class="exhibition-subtitle">{{ exhibition.title_en }}</h2>
+        {% endif %}
+        <div class="exhibition-info">
+            <p>{{ exhibition.start_date|date:"Y년 m월 d일" }} - {{ exhibition.end_date|date:"Y년 m월 d일" }}</p>
+            <p>{{ exhibition.venue|default:"하나아트갤러리" }}</p>
         </div>
-    </div>
-    
-    <div class="scroll-indicator">
-        <i class="fas fa-chevron-down fa-2x text-white"></i>
-    </div>
-</section>
-
-<!-- 전시 소개 -->
-{% if exhibition.description %}
-<section class="exhibition-intro">
-    <div class="container">
-        <div class="intro-grid">
-            <div class="intro-text">
-                <h2>전시 소개</h2>
-                {{ exhibition.description|linebreaks }}
-            </div>
-            <div class="intro-image">
-                {% if exhibition.poster %}
-                <img src="{{ exhibition.poster.url }}" alt="{{ exhibition.title }}">
-                {% else %}
-                <img src="{% static 'images/gallery/frame_wall.jpg' %}" alt="전시 이미지">
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- 참여 작가 -->
-{% if exhibition.artists.all %}
-<section class="artists-section">
-    <div class="container">
-        <div class="section-header">
-            <h2>참여 작가</h2>
-        </div>
-        <div class="artists-grid">
-            {% for artist in exhibition.artists.all %}
-            <a href="{% url 'gallery:artist_detail' artist.id %}" class="artist-chip">
-                <div class="artist-avatar">
-                    {% if artist.profile_image %}
-                    <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}">
-                    {% else %}
-                    {{ artist.name|slice:":1" }}
-                    {% endif %}
-                </div>
-                <div class="artist-info">
-                    <h4>{{ artist.name }}</h4>
-                    <p>{{ artist.major_field|default:"현대미술" }}</p>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- 전시 작품 -->
-<section class="artworks-section">
-    <div class="container">
-        <div class="section-header">
-            <h2>전시 작품</h2>
-            <p class="text-muted">Exhibition Artworks</p>
-        </div>
-        
-        <!-- 필터 탭 -->
-        <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">전체</button>
-            {% for artist in exhibition.artists.all %}
-            <button class="filter-tab" data-filter="{{ artist.id }}">{{ artist.name }}</button>
-            {% endfor %}
-        </div>
-        
-        <!-- 작품 그리드 -->
-        <div class="artworks-grid">
-            {% for artwork in artworks %}
-            <div class="artwork-card" data-artist="{{ artwork.artist.id }}" 
-                 data-image="{% if artwork.images.first %}{{ artwork.images.first.image.url }}{% else %}{% static 'images/gallery/ihan_01.jpg' %}{% endif %}">
-                <div class="artwork-image">
-                    {% if artwork.images.first %}
-                    <img src="{{ artwork.images.first.image.url }}" alt="{{ artwork.title }}">
-                    {% else %}
-                    <img src="{% static 'images/gallery/ihan_01.jpg' %}" alt="{{ artwork.title }}">
-                    {% endif %}
-                    {% if artwork.is_featured %}
-                    <span class="artwork-badge">FEATURED</span>
-                    {% endif %}
-                </div>
-                <div class="artwork-info">
-                    <h3 class="artwork-title">{{ artwork.title }}</h3>
-                    <div class="artwork-artist">
-                        <div class="artist-thumb">{{ artwork.artist.name|slice:":1" }}</div>
-                        <span>{{ artwork.artist.name }}</span>
-                    </div>
-                    <div class="artwork-details">
-                        {% if artwork.year %}
-                        <div class="detail-item">
-                            <i class="far fa-calendar"></i>
-                            <span>{{ artwork.year }}년</span>
-                        </div>
-                        {% endif %}
-                        {% if artwork.medium %}
-                        <div class="detail-item">
-                            <i class="fas fa-paint-brush"></i>
-                            <span>{{ artwork.medium }}</span>
-                        </div>
-                        {% endif %}
-                        {% if artwork.size %}
-                        <div class="detail-item">
-                            <i class="fas fa-ruler-combined"></i>
-                            <span>{{ artwork.size }}</span>
-                        </div>
-                        {% endif %}
-                        {% if artwork.price and artwork.is_for_sale %}
-                        <div class="detail-item">
-                            <i class="fas fa-tag"></i>
-                            <span>₩{{ artwork.price|intcomma }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-12 text-center py-5">
-                <i class="fas fa-palette fa-5x text-muted mb-3"></i>
-                <p class="text-muted">전시 작품이 곧 업데이트될 예정입니다.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- 전시 정보 -->
-<section class="info-section">
-    <div class="container">
-        <div class="info-grid">
-            <div class="info-card">
-                <i class="far fa-clock"></i>
-                <h3>관람시간</h3>
-                <p>화-일 10:00 - 18:00<br>월요일 휴관</p>
-            </div>
-            <div class="info-card">
-                <i class="fas fa-ticket-alt"></i>
-                <h3>입장료</h3>
-                <p>무료<br>Free Admission</p>
-            </div>
-            <div class="info-card">
-                <i class="fas fa-phone-alt"></i>
-                <h3>문의</h3>
-                <p>02-736-7877<br>info@hanaart.co.kr</p>
-            </div>
-            <div class="info-card">
-                <i class="fas fa-map-marked-alt"></i>
-                <h3>위치</h3>
-                <p>서울 종로구 인사동길 41<br>하나빌딩 2층</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- 관련 전시 -->
-{% if exhibition.get_related_exhibitions %}
-<section class="py-5 bg-light">
-    <div class="container">
-        <h3 class="mb-4">다른 전시</h3>
-        <div class="row g-4">
-            {% for related in exhibition.get_related_exhibitions %}
-            <div class="col-md-4">
-                <a href="{% url 'gallery:exhibition_detail' related.slug %}" class="text-decoration-none">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ related.title }}</h5>
-                            <p class="card-text text-muted">
-                                {{ related.start_date|date:"Y.m.d" }} - {{ related.end_date|date:"Y.m.d" }}
-                            </p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- 네비게이션 복원 -->
-<nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm" style="top: -100px;" id="exhibitionNav">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="/static/images/gallery/ci_hana.png" alt="Logo" width="40" class="me-2" onerror="this.style.display='none'">
-            HANA ART GALLERY
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav2">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarNav2">
-            <ul class="nav nav-pills ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">홈</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'gallery:artist_list' %}">작가</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'gallery:exhibition_detail' 'the-journey-2025' %}">전시</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pagebuilder:page_list' %}">페이지</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/#frame">액자제작</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/#visit">오시는길</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- 라이트박스 -->
-<div class="artwork-lightbox" id="artworkLightbox">
-    <div class="lightbox-close">
-        <i class="fas fa-times fa-2x text-white"></i>
-    </div>
-    <div class="lightbox-content">
-        <img src="" alt="작품 이미지">
-        <div class="lightbox-info">
-            <h3 id="lightboxTitle"></h3>
-            <p id="lightboxArtist"></p>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down fa-2x"></i>
         </div>
     </div>
 </div>
 
+<!-- Exhibition Content -->
+<div class="exhibition-content">
+    <div class="container">
+        {% if exhibition.description %}
+        <div class="exhibition-description">
+            {{ exhibition.description|linebreaks }}
+        </div>
+        {% endif %}
+        
+        <!-- Artworks Section -->
+        <h2 class="section-title">Exhibition Artworks</h2>
+        <div class="artworks-grid">
+            {% for artwork in artworks %}
+            <div class="artwork-card" onclick="openArtworkModal({{ forloop.counter0 }})">
+                <div class="artwork-image-container">
+                    {% if artwork.main_image %}
+                    <img src="{{ artwork.main_image.url }}" alt="{{ artwork.title }}" class="artwork-image">
+                    {% else %}
+                    <div class="artwork-image" style="background: linear-gradient(135deg, #dfe6e9, #b2bec3);"></div>
+                    {% endif %}
+                </div>
+                <div class="artwork-info">
+                    <h3 class="artwork-title">{{ artwork.title }}</h3>
+                    <p class="artwork-artist">{{ artwork.artist.name }}</p>
+                    <div class="artwork-details">
+                        {% if artwork.year %}{{ artwork.year }}년{% endif %}
+                        {% if artwork.medium %}<br>{{ artwork.medium }}{% endif %}
+                        {% if artwork.size %}<br>{{ artwork.size }}{% endif %}
+                    </div>
+                    {% if artwork.price and artwork.is_for_sale %}
+                    <div class="artwork-price">
+                        {% if artwork.is_sold %}
+                        SOLD
+                        {% else %}
+                        ₩{{ artwork.price|floatformat:0 }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Artists Section -->
+{% if exhibition.artists.exists %}
+<div class="artists-section">
+    <div class="container">
+        <h2 class="section-title">Participating Artists</h2>
+        <div class="artists-grid">
+            {% for artist in exhibition.artists.all %}
+            <div class="artist-card">
+                {% if artist.profile_image %}
+                <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}" class="artist-avatar">
+                {% else %}
+                <div class="artist-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user fa-3x" style="color: white;"></i>
+                </div>
+                {% endif %}
+                <h3 class="artist-name">{{ artist.name }}</h3>
+                {% if artist.bio %}
+                <p class="artist-bio">{{ artist.bio|truncatewords:30 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Artwork Modal -->
+<div id="artworkModal" class="artwork-modal">
+    <div class="modal-content">
+        <div class="modal-close" onclick="closeArtworkModal()">×</div>
+        <div class="modal-image">
+            <img id="modalImage" src="" alt="">
+        </div>
+        <div class="modal-info">
+            <h2 id="modalTitle"></h2>
+            <p id="modalArtist" style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;"></p>
+            <div id="modalDetails" style="color: #999; line-height: 1.8;"></div>
+            <div id="modalDescription" style="margin-top: 2rem; line-height: 1.8;"></div>
+            <div id="modalPrice" style="font-size: 1.5rem; font-weight: 700; color: #e74c3c; margin-top: 2rem;"></div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// 네비게이션 스크롤 효과
-window.addEventListener('scroll', function() {
-    const nav = document.getElementById('exhibitionNav');
-    if (window.scrollY > 100) {
-        nav.style.top = '0';
-        nav.style.transition = 'top 0.3s ease';
-    } else {
-        nav.style.top = '-100px';
+const artworks = [
+    {% for artwork in artworks %}
+    {
+        title: "{{ artwork.title|escapejs }}",
+        artist: "{{ artwork.artist.name|escapejs }}",
+        image: "{% if artwork.main_image %}{{ artwork.main_image.url }}{% endif %}",
+        year: "{{ artwork.year|default:'' }}",
+        medium: "{{ artwork.medium|default:''|escapejs }}",
+        size: "{{ artwork.size|default:''|escapejs }}",
+        description: "{{ artwork.description|default:''|escapejs }}",
+        price: "{% if artwork.price and artwork.is_for_sale %}{% if artwork.is_sold %}SOLD{% else %}₩{{ artwork.price|floatformat:0 }}{% endif %}{% endif %}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+function openArtworkModal(index) {
+    const artwork = artworks[index];
+    const modal = document.getElementById('artworkModal');
+    
+    document.getElementById('modalImage').src = artwork.image || '';
+    document.getElementById('modalTitle').textContent = artwork.title;
+    document.getElementById('modalArtist').textContent = artwork.artist;
+    
+    let details = [];
+    if (artwork.year) details.push(artwork.year + '년');
+    if (artwork.medium) details.push(artwork.medium);
+    if (artwork.size) details.push(artwork.size);
+    document.getElementById('modalDetails').innerHTML = details.join('<br>');
+    
+    document.getElementById('modalDescription').innerHTML = artwork.description.replace(/\\n/g, '<br>');
+    document.getElementById('modalPrice').textContent = artwork.price;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeArtworkModal() {
+    const modal = document.getElementById('artworkModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeArtworkModal();
     }
 });
 
-// 필터 탭
-document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-        // 활성 탭 변경
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        
-        // 작품 필터링
-        const filter = this.dataset.filter;
-        const artworks = document.querySelectorAll('.artwork-card');
-        
-        artworks.forEach(artwork => {
-            if (filter === 'all' || artwork.dataset.artist === filter) {
-                artwork.style.display = 'block';
-                artwork.style.animation = 'fadeInUp 0.5s ease';
-            } else {
-                artwork.style.display = 'none';
-            }
-        });
-    });
-});
-
-// 라이트박스
-document.querySelectorAll('.artwork-card').forEach(card => {
-    card.addEventListener('click', function() {
-        const lightbox = document.getElementById('artworkLightbox');
-        const img = lightbox.querySelector('img');
-        const title = this.querySelector('.artwork-title').textContent;
-        const artist = this.querySelector('.artwork-artist span').textContent;
-        
-        img.src = this.dataset.image;
-        document.getElementById('lightboxTitle').textContent = title;
-        document.getElementById('lightboxArtist').textContent = artist;
-        
-        lightbox.classList.add('active');
-    });
-});
-
-// 라이트박스 닫기
-document.querySelector('.lightbox-close').addEventListener('click', function() {
-    document.getElementById('artworkLightbox').classList.remove('active');
-});
-
-document.getElementById('artworkLightbox').addEventListener('click', function(e) {
+// Close modal on background click
+document.getElementById('artworkModal').addEventListener('click', function(e) {
     if (e.target === this) {
-        this.classList.remove('active');
+        closeArtworkModal();
     }
-});
-
-// 부드러운 스크롤
-document.querySelector('.scroll-indicator').addEventListener('click', function() {
-    window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth'
-    });
-});
-
-// 스크롤 애니메이션
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, observerOptions);
-
-document.querySelectorAll('.artwork-card, .artist-chip, .info-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'all 0.6s ease';
-    observer.observe(el);
 });
 </script>
 {% endblock %}

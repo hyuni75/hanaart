@@ -111,13 +111,17 @@
                         <a class="nav-link" href="{% url 'gallery:location' %}">오시는길</a>
                     </li>
                     
-                    {% if user.is_staff %}
                     <li class="nav-item ms-3">
-                        <a class="nav-link btn btn-outline-primary btn-sm px-3" href="/admin/">
+                        {% if user.is_authenticated and user.is_staff %}
+                        <a class="nav-link btn btn-outline-primary btn-sm px-3" href="{% url 'adminpanel:dashboard' %}">
                             <i class="bi bi-gear"></i> 관리
                         </a>
+                        {% else %}
+                        <a class="nav-link btn btn-outline-secondary btn-sm px-3" href="{% url 'adminpanel:login' %}">
+                            <i class="bi bi-lock"></i> 관리자
+                        </a>
+                        {% endif %}
                     </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -152,71 +156,32 @@
         </div>
     </footer>
     
-    <!-- 공통 모달 -->
-    <div class="modal fade" id="commonModal" tabindex="-1">
+    <!-- 공통 모달 (CLAUDE.md 규칙 준수) -->
+    <div class="modal fade" id="commonModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="commonModalTitle">알림</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary modal-confirm-btn">확인</button>
+                <div class="modal-body text-center py-4" id="commonModalBody">
+                    메시지
+                </div>
+                <div class="modal-footer border-0" id="commonModalFooter">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">확인</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- 토스트 컨테이너 -->
-    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
-    
+
+    <!-- 공통 토스트 컨테이너 (화면 중앙 표시) -->
+    <div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
+    </div>
+
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // 공통 모달 함수
-        function showModal(title, content, onConfirm) {
-            const modal = document.getElementById('commonModal');
-            const modalInstance = new bootstrap.Modal(modal);
-            
-            modal.querySelector('.modal-title').textContent = title;
-            modal.querySelector('.modal-body').innerHTML = content;
-            
-            const confirmBtn = modal.querySelector('.modal-confirm-btn');
-            confirmBtn.onclick = function() {
-                if (onConfirm) onConfirm();
-                modalInstance.hide();
-            };
-            
-            modalInstance.show();
-        }
-        
-        // 토스트 메시지 함수
-        function showToast(message, type = 'info') {
-            const toastHtml = `
-                <div class="toast" role="alert">
-                    <div class="toast-header">
-                        <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'} me-2"></i>
-                        <strong class="me-auto">알림</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>
-            `;
-            
-            const toastContainer = document.querySelector('.toast-container');
-            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-            
-            const toastElement = toastContainer.lastElementChild;
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-            
-            toastElement.addEventListener('hidden.bs.toast', () => {
-                toastElement.remove();
-            });
-        }
-    </script>
+    <script src="/static/js/modal.js"></script>
+    <script src="/static/js/toast.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
