@@ -35,8 +35,9 @@ docker-compose exec web python manage.py collectstatic --noinput
 docker-compose exec web python manage.py createsuperuser
 
 # 9. 초기 데이터 로드 (필요시)
-docker-compose exec web python init_data.py
-docker-compose exec web python init_filter_data.py
+docker-compose exec web python init_data.py         # 메뉴 데이터
+docker-compose exec web python init_filter_data.py  # 필터 데이터  
+docker-compose exec web python init_gallery_data.py # 갤러리 데이터 (작가, 전시, 작품)
 ```
 
 ### 2. 코드 업데이트 시
