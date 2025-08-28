@@ -1,0 +1,27 @@
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+secrets.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+*.pid
+
+# Zone.Identifier files
+*Zone.Identifier

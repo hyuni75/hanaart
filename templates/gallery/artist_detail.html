@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ artist.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 작가 프로필 -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            {% if artist.profile_image %}
+            <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}" class="img-fluid rounded shadow">
+            {% else %}
+            <div class="profile-placeholder rounded shadow d-flex align-items-center justify-content-center" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-user fa-5x text-white"></i>
+            </div>
+            {% endif %}
+            
+            <!-- 작가 정보 카드 -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">작가 정보</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% if artist.birth_date %}
+                        <li class="mb-2">
+                            <i class="far fa-calendar text-muted"></i>
+                            <span class="ms-2">{{ artist.birth_date|date:"Y년 m월 d일" }} 출생</span>
+                        </li>
+                        {% endif %}
+                        {% if artist.nationality %}
+                        <li class="mb-2">
+                            <i class="fas fa-globe text-muted"></i>
+                            <span class="ms-2">{{ artist.nationality }}</span>
+                        </li>
+                        {% endif %}
+                        {% if artist.education %}
+                        <li class="mb-2">
+                            <i class="fas fa-graduation-cap text-muted"></i>
+                            <span class="ms-2">{{ artist.education|linebreaks }}</span>
+                        </li>
+                        {% endif %}
+                        <li class="mb-2">
+                            <i class="fas fa-palette text-muted"></i>
+                            <span class="ms-2">작품 {{ artworks.count }}점</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-image text-muted"></i>
+                            <span class="ms-2">전시 {{ exhibitions.count }}회</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- SNS 링크 -->
+            {% if artist.website or artist.instagram or artist.facebook %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">연결</h5>
+                    <div class="d-flex gap-2">
+                        {% if artist.website %}
+                        <a href="{{ artist.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-globe"></i> 웹사이트
+                        </a>
+                        {% endif %}
+                        {% if artist.instagram %}
+                        <a href="{{ artist.instagram }}" target="_blank" class="btn btn-outline-danger btn-sm">
+                            <i class="fab fa-instagram"></i> 인스타그램
+                        </a>
+                        {% endif %}
+                        {% if artist.facebook %}
+                        <a href="{{ artist.facebook }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-facebook"></i> 페이스북
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-8">
+            <!-- 작가 이름 및 영문명 -->
+            <h1 class="display-4 mb-2">{{ artist.name }}</h1>
+            {% if artist.name_en %}
+            <p class="text-muted fs-4 mb-4">{{ artist.name_en }}</p>
+            {% endif %}
+            
+            <!-- 작가 소개 -->
+            {% if artist.bio %}
+            <div class="artist-bio mb-4">
+                <h3 class="mb-3">작가 소개</h3>
+                {{ artist.bio|linebreaks }}
+            </div>
+            {% endif %}
+            
+            <!-- 주요 경력 -->
+            {% if artist.major_career %}
+            <div class="major-career mb-4">
+                <h3 class="mb-3">주요 경력</h3>
+                <div class="timeline">
+                    {{ artist.major_career|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 수상 경력 -->
+            {% if artist.awards %}
+            <div class="awards mb-4">
+                <h3 class="mb-3">수상 경력</h3>
+                {{ artist.awards|linebreaks }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- 작가 작품 -->
+    <div class="artist-artworks mb-5">
+        <h2 class="mb-4">작품 갤러리</h2>
+        
+        {% if artworks %}
+        <div class="row g-4">
+            {% for artwork in artworks %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card artwork-card h-100 shadow-sm">
+                    {% if artwork.images.first %}
+                    <img src="{{ artwork.images.first.image.url }}" class="card-img-top" alt="{{ artwork.title }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top placeholder-artwork d-flex align-items-center justify-content-center" style="height: 250px; background: #f8f9fa;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">{{ artwork.title }}</h5>
+                        {% if artwork.title_en %}
+                        <p class="text-muted small">{{ artwork.title_en }}</p>
+                        {% endif %}
+                        
+                        <ul class="list-unstyled small text-muted">
+                            {% if artwork.year %}
+                            <li><i class="far fa-calendar"></i> {{ artwork.year }}년</li>
+                            {% endif %}
+                            {% if artwork.medium %}
+                            <li><i class="fas fa-paint-brush"></i> {{ artwork.medium }}</li>
+                            {% endif %}
+                            {% if artwork.size %}
+                            <li><i class="fas fa-ruler-combined"></i> {{ artwork.size }}</li>
+                            {% endif %}
+                            {% if artwork.price and artwork.show_price %}
+                            <li><i class="fas fa-won-sign"></i> {{ artwork.price|intcomma }}원</li>
+                            {% endif %}
+                        </ul>
+                        
+                        {% if artwork.description %}
+                        <p class="card-text small">{{ artwork.description|truncatechars:100 }}</p>
+                        {% endif %}
+                        
+                        <a href="{% url 'gallery:artwork_detail' artwork.id %}" class="btn btn-sm btn-outline-primary">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-palette fa-3x text-muted mb-3"></i>
+            <p class="text-muted">아직 등록된 작품이 없습니다.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 참여 전시 -->
+    <div class="artist-exhibitions">
+        <h2 class="mb-4">참여 전시</h2>
+        
+        {% if exhibitions %}
+        <div class="row g-4">
+            {% for exhibition in exhibitions %}
+            <div class="col-md-6">
+                <div class="card exhibition-card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'gallery:exhibition_detail' exhibition.slug %}" class="text-decoration-none text-dark">
+                                {{ exhibition.title }}
+                            </a>
+                        </h5>
+                        {% if exhibition.title_en %}
+                        <p class="text-muted small">{{ exhibition.title_en }}</p>
+                        {% endif %}
+                        
+                        <p class="card-text">
+                            <i class="far fa-calendar"></i>
+                            {{ exhibition.start_date|date:"Y.m.d" }} - {{ exhibition.end_date|date:"Y.m.d" }}
+                            {% if exhibition.is_ongoing %}
+                            <span class="badge bg-success ms-2">진행중</span>
+                            {% elif exhibition.is_upcoming %}
+                            <span class="badge bg-info ms-2">예정</span>
+                            {% else %}
+                            <span class="badge bg-secondary ms-2">종료</span>
+                            {% endif %}
+                        </p>
+                        
+                        {% if exhibition.location %}
+                        <p class="card-text small">
+                            <i class="fas fa-map-marker-alt"></i> {{ exhibition.location }}
+                        </p>
+                        {% endif %}
+                        
+                        {% if exhibition.description %}
+                        <p class="card-text">{{ exhibition.description|truncatechars:150 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-images fa-3x text-muted mb-3"></i>
+            <p class="text-muted">참여한 전시가 없습니다.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.artwork-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.artwork-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
+}
+
+.exhibition-card {
+    transition: all 0.3s;
+}
+
+.exhibition-card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1)!important;
+}
+
+.timeline {
+    padding-left: 20px;
+    border-left: 3px solid #dee2e6;
+}
+
+.artist-bio, .major-career, .awards {
+    line-height: 1.8;
+}
+</style>
+{% endblock %}

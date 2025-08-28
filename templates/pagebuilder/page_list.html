@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}페이지 목록 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="page-header mb-5">
+        <h1 class="display-4">콘텐츠 페이지</h1>
+        <p class="lead">하나아트갤러리의 다양한 콘텐츠를 확인하세요</p>
+    </div>
+    
+    <div class="row g-4">
+        {% for page in pages %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm page-card">
+                <!-- 페이지 썸네일 (첫 번째 이미지 블록 사용) -->
+                {% if page.blocks.first %}
+                <div class="card-img-top page-thumbnail" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                        <h3>{{ page.title|truncatechars:30 }}</h3>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'pagebuilder:page_detail' page.slug %}" class="text-decoration-none text-dark">
+                            {{ page.title }}
+                        </a>
+                    </h5>
+                    
+                    {% if page.meta_description %}
+                    <p class="card-text text-muted">
+                        {{ page.meta_description|truncatechars:100 }}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- 메타 정보 -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">
+                            <i class="far fa-calendar"></i> {{ page.published_at|date:"Y.m.d" }}
+                        </small>
+                        <div class="page-stats">
+                            <span class="me-2" title="조회수">
+                                <i class="far fa-eye"></i> {{ page.view_count|intcomma }}
+                            </span>
+                            {% if page.enable_comments %}
+                            <span class="me-2" title="댓글">
+                                <i class="far fa-comment"></i> {{ page.comment_count|default:0 }}
+                            </span>
+                            {% endif %}
+                            {% if page.enable_likes %}
+                            <span title="좋아요">
+                                <i class="far fa-heart"></i> {{ page.like_count|default:0 }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                <p class="text-muted">아직 공개된 페이지가 없습니다.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- 페이지네이션 -->
+    {% if is_paginated %}
+    <nav aria-label="페이지 탐색" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">처음</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a>
+            </li>
+            {% endif %}
+            
+            {% for num in paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ paginator.num_pages }}">마지막</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+}
+
+.page-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
+}
+
+.page-thumbnail {
+    position: relative;
+    overflow: hidden;
+}
+
+.page-stats {
+    font-size: 0.875rem;
+}
+
+.page-stats span {
+    display: inline-block;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}하나아트갤러리 - 현대미술 전문 갤러리{% endblock %}
+
+{% block content %}
+<!-- 히어로 섹션 -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">하나아트갤러리</h1>
+                <p class="lead text-muted mb-4">
+                    동시대 감수성과 한국적 미감을 잇는 현대미술 전문 공간입니다.
+                    신진에서 중견·원로까지 폭넓은 스펙트럼의 작가와 협업하며,
+                    전시·아트페어·콜렉션 컨설팅, 아카이빙과 액자 제작까지 한 곳에서 제공합니다.
+                </p>
+                <div class="alert alert-light border-start border-4 border-primary">
+                    <em>"예술은 시대를 비추는 거울, 바람을 여는 창입니다."</em>
+                    <div class="text-muted small mt-2">— 대표 이방은</div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="/static/images/gallery-main.jpg" class="img-fluid rounded shadow" alt="갤러리 전경">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 현재 전시 -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">현재 전시</h2>
+            <p class="text-muted">Current Exhibition</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <img src="/static/images/current-exhibition.jpg" class="img-fluid rounded-start h-100 object-fit-cover" alt="현재 전시">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body p-4">
+                                <span class="badge bg-primary mb-2">진행중</span>
+                                <h3 class="card-title">이한 초대전</h3>
+                                <h5 class="text-muted">Rhythm of Light</h5>
+                                <p class="card-text mt-3">
+                                    반복 제스처와 옻칠의 물성으로 빛의 리듬을 시각화하는 이한 작가의 신작을 선보입니다.
+                                    감각과 시간성이 교차하는 장(field)을 경험해 보세요.
+                                </p>
+                                <div class="mt-4">
+                                    <p class="mb-1"><i class="bi bi-calendar3 me-2"></i>2025.01.20 – 02.02</p>
+                                    <p class="mb-0"><i class="bi bi-geo-alt me-2"></i>하나아트갤러리</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 전속작가 -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">전속작가</h2>
+            <p class="text-muted">Gallery Artists</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="/static/images/artist1.jpg" class="card-img-top" alt="작가">
+                    <div class="card-body">
+                        <h5 class="card-title">김정숙</h5>
+                        <p class="card-text small text-muted">
+                            추계예대 서양화과 졸업. 국내외 개인전 24회, 해외/국내 아트페어 및 단체전 300여 회 참여.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="/static/images/artist2.jpg" class="card-img-top" alt="작가">
+                    <div class="card-body">
+                        <h5 class="card-title">이한</h5>
+                        <p class="card-text small text-muted">
+                            옻칠의 물성과 반복적 붓질을 결합해 빛·몸·시간이 어우러지는 장(field)을 구축.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="/static/images/artist3.jpg" class="card-img-top" alt="작가">
+                    <div class="card-body">
+                        <h5 class="card-title">박세연</h5>
+                        <p class="card-text small text-muted">
+                            건국대 금속공예 전공. 2024–25 국내 다수 개인전 및 서울·홍콩·싱가포르 등 아트페어 참가.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/artists/" class="btn btn-outline-primary">전체 작가 보기 →</a>
+        </div>
+    </div>
+</section>
+
+<!-- 서비스 -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">서비스</h2>
+            <p class="text-muted">Our Services</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-easel text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5>전시 기획</h5>
+                <p class="small text-muted">개인전, 단체전, 기획전 등 다양한 전시 기획 및 운영</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-palette text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5>아트페어</h5>
+                <p class="small text-muted">국내외 주요 아트페어 참가 및 작품 판매</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-frame text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5>액자 제작</h5>
+                <p class="small text-muted">맞춤형 액자 제작 및 작품 보존 처리</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-chat-dots text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5>컨설팅</h5>
+                <p class="small text-muted">작품 수집 및 관리에 대한 전문 컨설팅</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 연락처 -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">찾아오시는 길</h2>
+            <p class="text-muted">Location</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="bi bi-geo-alt text-primary me-2"></i>주소</h5>
+                                <p>서울특별시 종로구 인사동10길 2<br>단성빌딩 2층(갤러리) / 3층(액자)</p>
+                                
+                                <h5 class="mt-4"><i class="bi bi-telephone text-primary me-2"></i>연락처</h5>
+                                <p>
+                                    Tel. 02-736-7877<br>
+                                    Fax. 02-736-4877<br>
+                                    Mobile. 010-8681-7277
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="bi bi-clock text-primary me-2"></i>운영시간</h5>
+                                <p>
+                                    평일: 10:00 - 18:00<br>
+                                    토요일: 10:00 - 17:00<br>
+                                    일요일 및 공휴일 휴관
+                                </p>
+                                
+                                <div class="mt-4">
+                                    <a href="https://www.instagram.com/hanaartgallery_offical/" target="_blank" class="btn btn-primary">
+                                        <i class="bi bi-instagram me-2"></i>인스타그램 방문
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 하나아트갤러리</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #e51c23;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: #2c3e50;
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .logo {
+            padding: 20px;
+            background: #1a252f;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: #34495e;
+            border-left-color: var(--primary-color);
+        }
+        
+        .sidebar .nav-link.active {
+            background: #34495e;
+            border-left-color: var(--primary-color);
+        }
+        
+        /* 메인 컨텐츠 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* 카드 */
+        .stat-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        /* 메뉴 아이템 관리 */
+        .menu-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .menu-item.dragging {
+            opacity: 0.5;
+        }
+        
+        .menu-handle {
+            cursor: move;
+            color: #6c757d;
+        }
+        
+        /* 스위치 */
+        .form-switch .form-check-input {
+            width: 50px;
+            height: 25px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 사이드바 -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="bi bi-easel me-2"></i> 관리자 패널
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#dashboard">
+                <i class="bi bi-speedometer2 me-2"></i> 대시보드
+            </a>
+            <a class="nav-link" href="#navigation">
+                <i class="bi bi-list-nested me-2"></i> 네비게이션 관리
+            </a>
+            <a class="nav-link" href="#pages">
+                <i class="bi bi-file-text me-2"></i> 페이지 관리
+            </a>
+            <a class="nav-link" href="#gallery">
+                <i class="bi bi-images me-2"></i> 갤러리 관리
+            </a>
+            <a class="nav-link" href="#interaction">
+                <i class="bi bi-chat-dots me-2"></i> 상호작용 관리
+            </a>
+            <a class="nav-link" href="#moderation">
+                <i class="bi bi-shield-check me-2"></i> 콘텐츠 필터링
+            </a>
+            <hr class="my-3">
+            <a class="nav-link" href="/">
+                <i class="bi bi-house me-2"></i> 사이트 보기
+            </a>
+            <a class="nav-link" href="/admin/">
+                <i class="bi bi-gear me-2"></i> Django Admin
+            </a>
+        </nav>
+    </div>
+    
+    <!-- 메인 컨텐츠 -->
+    <div class="main-content">
+        <!-- 헤더 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">대시보드</h1>
+            <div>
+                <span class="text-muted me-3">관리자님, 환영합니다!</span>
+                <a href="/admin/logout/" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> 로그아웃
+                </a>
+            </div>
+        </div>
+        
+        <!-- 통계 카드 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                                <i class="bi bi-list-ul"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">메뉴 아이템</h6>
+                                <h3 class="mb-0">{{ total_menu_items }}</h3>
+                                <small class="text-success">활성: {{ active_menu_items }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                                <i class="bi bi-file-earmark"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">페이지</h6>
+                                <h3 class="mb-0">0</h3>
+                                <small class="text-muted">준비 중</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-info bg-opacity-10 text-info me-3">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">전속작가</h6>
+                                <h3 class="mb-0">0</h3>
+                                <small class="text-muted">준비 중</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                                <i class="bi bi-chat"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">댓글</h6>
+                                <h3 class="mb-0">0</h3>
+                                <small class="text-muted">준비 중</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 네비게이션 관리 섹션 -->
+        <div class="card" id="navigation-section">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-nested me-2"></i> 네비게이션 관리
+                </h5>
+                <button class="btn btn-primary btn-sm" onclick="addMenuItem()">
+                    <i class="bi bi-plus-lg"></i> 메뉴 추가
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="menuList">
+                    {% for item in menu_items %}
+                    <div class="menu-item" data-id="{{ item.id }}">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-grip-vertical menu-handle me-3"></i>
+                                <div>
+                                    <strong>{{ item.title }}</strong>
+                                    <small class="text-muted ms-2">{{ item.get_absolute_url }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           {% if item.is_visible %}checked{% endif %}
+                                           onchange="toggleMenuItem({{ item.id }}, this.checked)">
+                                    <label class="form-check-label small">표시</label>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editMenuItem({{ item.id }})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMenuItem({{ item.id }})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 최근 활동 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i> 최근 활동
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-muted text-center py-3">
+                    아직 활동 내역이 없습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 메뉴 편집 모달 -->
+    <div class="modal fade" id="menuModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">메뉴 아이템 편집</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="menuForm">
+                        <div class="mb-3">
+                            <label class="form-label">제목</label>
+                            <input type="text" class="form-control" id="menuTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">슬러그</label>
+                            <input type="text" class="form-control" id="menuSlug" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">타입</label>
+                            <select class="form-select" id="menuType">
+                                <option value="page">페이지 링크</option>
+                                <option value="section">섹션 앵커</option>
+                                <option value="external">외부 링크</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="urlField" style="display:none;">
+                            <label class="form-label">URL</label>
+                            <input type="text" class="form-control" id="menuUrl">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="menuActive">
+                            <label class="form-check-label">활성화</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="menuVisible">
+                            <label class="form-check-label">표시</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMenuItem()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        // 드래그 앤 드롭 초기화
+        const menuList = document.getElementById('menuList');
+        Sortable.create(menuList, {
+            handle: '.menu-handle',
+            animation: 150,
+            onEnd: function(evt) {
+                updateMenuOrder();
+            }
+        });
+        
+        // 메뉴 타입 변경 처리
+        document.getElementById('menuType').addEventListener('change', function() {
+            const urlField = document.getElementById('urlField');
+            urlField.style.display = this.value === 'external' ? 'block' : 'none';
+        });
+        
+        // 메뉴 아이템 추가
+        function addMenuItem() {
+            document.getElementById('menuForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('menuModal'));
+            modal.show();
+        }
+        
+        // 메뉴 아이템 편집
+        function editMenuItem(id) {
+            // API 호출하여 데이터 로드
+            fetch(`/api/menu/${id}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('menuTitle').value = data.title;
+                    document.getElementById('menuSlug').value = data.slug;
+                    document.getElementById('menuType').value = data.menu_type;
+                    document.getElementById('menuUrl').value = data.url || '';
+                    document.getElementById('menuActive').checked = data.is_active;
+                    document.getElementById('menuVisible').checked = data.is_visible;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('menuModal'));
+                    modal.show();
+                });
+        }
+        
+        // 메뉴 아이템 삭제
+        function deleteMenuItem(id) {
+            if (confirm('정말로 이 메뉴를 삭제하시겠습니까?')) {
+                fetch(`/api/menu/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(() => location.reload());
+            }
+        }
+        
+        // 메뉴 아이템 토글
+        function toggleMenuItem(id, visible) {
+            fetch(`/api/menu/${id}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ is_visible: visible })
+            });
+        }
+        
+        // 메뉴 순서 업데이트
+        function updateMenuOrder() {
+            const items = Array.from(menuList.children);
+            const order = items.map((item, index) => ({
+                id: item.dataset.id,
+                order: index
+            }));
+            
+            fetch('/api/menu/reorder/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ order })
+            });
+        }
+        
+        // CSRF 토큰 가져오기
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

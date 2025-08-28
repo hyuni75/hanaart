@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+
+{% block title %}오시는길 - 하나아트갤러리{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .location-hero {
+        position: relative;
+        height: 40vh;
+        min-height: 350px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .location-hero::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,181.3C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat;
+        background-size: cover;
+        animation: wave 20s linear infinite;
+    }
+    
+    @keyframes wave {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+    }
+    
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        animation: fadeInDown 0.8s ease;
+    }
+    
+    .hero-content p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Map Container */
+    .map-container {
+        position: relative;
+        height: 500px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+    }
+    
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* Info Cards */
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #f093fb, #f5576c);
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+    
+    .info-card .icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .info-card h4 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+    
+    .info-card p {
+        color: #666;
+        line-height: 1.8;
+        margin: 0;
+    }
+    
+    .info-card .detail-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card .detail-item i {
+        color: #f5576c;
+        margin-right: 10px;
+        margin-top: 3px;
+        width: 20px;
+    }
+    
+    /* Transport Section */
+    .transport-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+    }
+    
+    .transport-tab {
+        border: none;
+        background: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        margin: 0 10px 10px 0;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    .transport-tab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .transport-tab.active {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .transport-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .transport-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .route-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #f5576c;
+    }
+    
+    .route-card h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .route-card p {
+        color: #666;
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    /* Contact Section */
+    .contact-section {
+        background: linear-gradient(135deg, rgba(240,147,251,0.1) 0%, rgba(245,87,108,0.1) 100%);
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+    }
+    
+    .contact-btn {
+        display: inline-block;
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .contact-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(245,87,108,0.3);
+        color: white;
+    }
+    
+    .contact-btn i {
+        margin-right: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .location-hero h1 {
+            font-size: 2rem;
+        }
+        
+        .map-container {
+            height: 350px;
+        }
+        
+        .transport-section {
+            padding: 2rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="location-hero">
+    <div class="hero-content">
+        <h1>오시는길</h1>
+        <p>HANA ART GALLERY LOCATION</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Gallery Info -->
+    <div class="row mb-5">
+        <div class="col-lg-4 mb-4" data-aos="fade-up">
+            <div class="info-card">
+                <div class="icon">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+                <h4>갤러리 위치</h4>
+                <div class="detail-item">
+                    <i class="bi bi-building"></i>
+                    <div>
+                        <strong>하나아트갤러리</strong><br>
+                        서울특별시 종로구 인사동10길 2<br>
+                        단성빌딩 2층
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="info-card">
+                <div class="icon">
+                    <i class="bi bi-clock-fill"></i>
+                </div>
+                <h4>운영시간</h4>
+                <div class="detail-item">
+                    <i class="bi bi-calendar-check"></i>
+                    <div>
+                        <strong>평일</strong><br>
+                        월요일 - 금요일: 10:00 - 18:00<br>
+                        토요일: 10:00 - 17:00
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="bi bi-calendar-x"></i>
+                    <div>
+                        <strong>휴관일</strong><br>
+                        일요일 및 공휴일
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="info-card">
+                <div class="icon">
+                    <i class="bi bi-telephone-fill"></i>
+                </div>
+                <h4>연락처</h4>
+                <div class="detail-item">
+                    <i class="bi bi-telephone"></i>
+                    <div>
+                        <strong>전화</strong><br>
+                        02-736-7877
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="bi bi-printer"></i>
+                    <div>
+                        <strong>팩스</strong><br>
+                        02-736-4877
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="bi bi-envelope"></i>
+                    <div>
+                        <strong>이메일</strong><br>
+                        info@hanaartgallery.com
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map -->
+    <div class="map-container mb-5" data-aos="zoom-in">
+        <div id="map"></div>
+    </div>
+    
+    <!-- Transportation -->
+    <div class="transport-section" data-aos="fade-up">
+        <h3 class="text-center mb-4">교통편 안내</h3>
+        
+        <div class="text-center mb-4">
+            <button class="transport-tab active" onclick="showTransport('subway')">
+                <i class="bi bi-train-subway"></i> 지하철
+            </button>
+            <button class="transport-tab" onclick="showTransport('bus')">
+                <i class="bi bi-bus-front"></i> 버스
+            </button>
+            <button class="transport-tab" onclick="showTransport('car')">
+                <i class="bi bi-car-front"></i> 자가용
+            </button>
+        </div>
+        
+        <div id="subway" class="transport-content active">
+            <div class="route-card">
+                <h5><i class="bi bi-circle-fill" style="color: #FF7300;"></i> 3호선 안국역</h5>
+                <p>6번 출구에서 도보 5분<br>
+                인사동 방향으로 직진 후 인사동10길 진입</p>
+            </div>
+            <div class="route-card">
+                <h5><i class="bi bi-circle-fill" style="color: #0052A4;"></i> 1호선 종각역</h5>
+                <p>3번 출구에서 도보 8분<br>
+                종로 방향으로 이동 후 인사동 진입</p>
+            </div>
+            <div class="route-card">
+                <h5><i class="bi bi-circle-fill" style="color: #996CAC;"></i> 5호선 종로3가역</h5>
+                <p>5번 출구에서 도보 10분<br>
+                인사동 방향으로 이동</p>
+            </div>
+        </div>
+        
+        <div id="bus" class="transport-content">
+            <div class="route-card">
+                <h5>간선버스</h5>
+                <p>109, 151, 162, 171, 172, 272, 601<br>
+                인사동 또는 안국동 하차</p>
+            </div>
+            <div class="route-card">
+                <h5>지선버스</h5>
+                <p>7025<br>
+                인사동 하차</p>
+            </div>
+            <div class="route-card">
+                <h5>마을버스</h5>
+                <p>종로 02, 종로 12<br>
+                인사동 입구 하차</p>
+            </div>
+        </div>
+        
+        <div id="car" class="transport-content">
+            <div class="route-card">
+                <h5>주차 안내</h5>
+                <p>건물 내 주차장 이용 가능 (유료)<br>
+                주말 및 공휴일 인사동 차량 통행 제한<br>
+                인근 공영주차장 이용 권장</p>
+            </div>
+            <div class="route-card">
+                <h5>인근 주차장</h5>
+                <p><strong>종로구청 공영주차장</strong><br>
+                도보 5분 거리 / 시간당 3,000원<br><br>
+                <strong>인사동 공영주차장</strong><br>
+                도보 3분 거리 / 시간당 4,000원</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact CTA -->
+    <div class="contact-section" data-aos="fade-up">
+        <h3 class="mb-4">갤러리 방문 예약</h3>
+        <p class="mb-4">전시 관람 및 작품 상담을 원하시면 연락 주세요</p>
+        <div>
+            <a href="tel:027367877" class="contact-btn">
+                <i class="bi bi-telephone"></i> 전화 문의
+            </a>
+            <a href="mailto:info@hanaartgallery.com" class="contact-btn">
+                <i class="bi bi-envelope"></i> 이메일 문의
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Kakao Map API -->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_API_KEY"></script>
+<script>
+    // Initialize Map
+    function initMap() {
+        var mapContainer = document.getElementById('map');
+        var mapOption = {
+            center: new kakao.maps.LatLng(37.5731, 126.9869), // 인사동 좌표
+            level: 3
+        };
+        
+        var map = new kakao.maps.Map(mapContainer, mapOption);
+        
+        // Add Marker
+        var markerPosition = new kakao.maps.LatLng(37.5731, 126.9869);
+        var marker = new kakao.maps.Marker({
+            position: markerPosition
+        });
+        marker.setMap(map);
+        
+        // Add Custom Overlay
+        var content = '<div style="padding:10px; background:white; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">' +
+                     '<strong>하나아트갤러리</strong><br>' +
+                     '서울 종로구 인사동10길 2' +
+                     '</div>';
+        
+        var customOverlay = new kakao.maps.CustomOverlay({
+            map: map,
+            position: markerPosition,
+            content: content,
+            yAnchor: 2.5
+        });
+    }
+    
+    // For demo purposes, use Google Maps iframe if Kakao API key is not available
+    if (typeof kakao === 'undefined') {
+        document.getElementById('map').innerHTML = 
+            '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3162.327649756599!2d126.98474031558996!3d37.57310643199859!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca2e6331b065d%3A0x8a3f2e6e51f5e8e7!2sInsadong-gil%2C%20Jongno-gu%2C%20Seoul!5e0!3m2!1sen!2skr!4v1234567890" ' +
+            'width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
+    } else {
+        window.onload = initMap;
+    }
+    
+    // Transport Tab Function
+    function showTransport(type) {
+        // Hide all content
+        document.querySelectorAll('.transport-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active from all tabs
+        document.querySelectorAll('.transport-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected content
+        document.getElementById(type).classList.add('active');
+        
+        // Add active to clicked tab
+        event.target.closest('.transport-tab').classList.add('active');
+    }
+</script>
+
+<!-- AOS Animation -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 50
+    });
+</script>
+{% endblock %}

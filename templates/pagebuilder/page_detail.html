@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ page.meta_title|default:page.title }} - {{ block.super }}{% endblock %}
+
+{% block meta_tags %}
+{% if page.meta_description %}
+<meta name="description" content="{{ page.meta_description }}">
+{% endif %}
+{% if page.meta_keywords %}
+<meta name="keywords" content="{{ page.meta_keywords }}">
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+{% if custom_styles %}
+<style>
+{{ custom_styles|safe }}
+</style>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 페이지 헤더 -->
+    <div class="page-header mb-5">
+        <h1 class="display-4">{{ page.title }}</h1>
+        
+        <!-- 메타 정보 -->
+        <div class="d-flex align-items-center text-muted mb-3">
+            <span><i class="far fa-calendar"></i> {{ page.published_at|date:"Y년 m월 d일" }}</span>
+            <span class="mx-2">|</span>
+            <span><i class="far fa-eye"></i> 조회 {{ view_count|intcomma }}회</span>
+            {% if page.enable_comments %}
+            <span class="mx-2">|</span>
+            <span><i class="far fa-comment"></i> 댓글 {{ comment_count|default:0 }}개</span>
+            {% endif %}
+            {% if page.enable_likes %}
+            <span class="mx-2">|</span>
+            <span><i class="far fa-heart"></i> 좋아요 {{ like_count|default:0 }}개</span>
+            {% endif %}
+        </div>
+        
+        <!-- 좋아요 버튼 -->
+        {% if page.enable_likes %}
+        <div class="interaction-buttons mb-4">
+            {% if user.is_authenticated %}
+            <button class="btn btn-outline-danger btn-like" data-page-id="{{ page.id }}">
+                <i class="{% if user_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+                <span class="like-count">{{ like_count|default:0 }}</span>
+            </button>
+            {% else %}
+            <button class="btn btn-outline-danger" onclick="alert('로그인 후 이용해주세요.')">
+                <i class="far fa-heart"></i>
+                <span class="like-count">{{ like_count|default:0 }}</span>
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 페이지 콘텐츠 블록 -->
+    <div class="page-content">
+        {% if custom_template %}
+            <!-- 커스텀 템플릿 사용 -->
+            {{ custom_template|safe }}
+        {% else %}
+            <!-- 기본 블록 렌더링 -->
+            {% for block in blocks %}
+            <div class="content-block block-{{ block.block_type }} {{ block.css_class }} mb-4" data-block-id="{{ block.id }}">
+                {% if block.title %}
+                <h2 class="block-title">{{ block.title }}</h2>
+                {% endif %}
+                
+                {% if block.block_type == 'text' %}
+                <div class="block-content">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'html' %}
+                <div class="block-content">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'image' %}
+                <div class="block-image">
+                    <img src="{{ block.content }}" alt="{{ block.title }}" class="img-fluid">
+                </div>
+                
+                {% elif block.block_type == 'video' %}
+                <div class="block-video ratio ratio-16x9">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'gallery' %}
+                <div class="block-gallery">
+                    <div class="row g-3">
+                        <!-- 갤러리 이미지는 settings_json에서 가져옴 -->
+                    </div>
+                </div>
+                
+                {% elif block.block_type == 'code' %}
+                <div class="block-code">
+                    <pre><code>{{ block.content }}</code></pre>
+                </div>
+                
+                {% elif block.block_type == 'quote' %}
+                <blockquote class="blockquote">
+                    <p>{{ block.content|safe }}</p>
+                    {% if block.settings_json.author %}
+                    <footer class="blockquote-footer">{{ block.settings_json.author }}</footer>
+                    {% endif %}
+                </blockquote>
+                
+                {% elif block.block_type == 'accordion' %}
+                <div class="accordion" id="accordion-{{ block.id }}">
+                    <!-- 아코디언 내용은 settings_json에서 가져옴 -->
+                </div>
+                
+                {% elif block.block_type == 'tabs' %}
+                <div class="block-tabs">
+                    <!-- 탭 내용은 settings_json에서 가져옴 -->
+                </div>
+                
+                {% elif block.block_type == 'table' %}
+                <div class="table-responsive">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'map' %}
+                <div class="block-map" style="height: 400px;">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'form' %}
+                <div class="block-form">
+                    {{ block.content|safe }}
+                </div>
+                
+                {% elif block.block_type == 'custom' %}
+                <div class="block-custom">
+                    {{ block.content|safe }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <!-- 댓글 섹션 -->
+    {% if page.enable_comments %}
+    <div class="comments-section mt-5 pt-5 border-top">
+        <h3 class="mb-4">댓글 <span class="badge bg-secondary">{{ comment_count|default:0 }}</span></h3>
+        
+        <!-- 댓글 작성 폼 -->
+        <div class="comment-form mb-5">
+            <form id="comment-form" data-page-id="{{ page.id }}">
+                {% csrf_token %}
+                
+                {% if not user.is_authenticated %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" name="author_name" placeholder="이름" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="email" class="form-control" name="author_email" placeholder="이메일 (선택)">
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <textarea class="form-control" name="content" rows="3" placeholder="댓글을 작성해주세요..." required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">댓글 작성</button>
+            </form>
+        </div>
+        
+        <!-- 댓글 목록 -->
+        <div class="comments-list">
+            {% for comment in comments %}
+            <div class="comment mb-4 {% if comment.is_filtered %}filtered-comment{% endif %}">
+                <div class="d-flex">
+                    <div class="comment-avatar me-3">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="comment-content flex-grow-1">
+                        <div class="comment-header">
+                            <strong>{{ comment.author.username|default:comment.author_name }}</strong>
+                            <span class="text-muted ms-2">{{ comment.created_at|timesince }} 전</span>
+                            {% if comment.is_filtered %}
+                            <span class="badge bg-warning text-dark ms-2">필터링됨</span>
+                            {% endif %}
+                        </div>
+                        <div class="comment-body mt-2">
+                            {{ comment.display_content|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">아직 댓글이 없습니다. 첫 댓글을 작성해보세요!</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 좋아요 토글
+$('.btn-like').click(function() {
+    const pageId = $(this).data('page-id');
+    const button = $(this);
+    
+    $.post(`/pages/${pageId}/like/`, {
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+    })
+    .done(function(data) {
+        if (data.liked) {
+            button.find('i').removeClass('far').addClass('fas');
+        } else {
+            button.find('i').removeClass('fas').addClass('far');
+        }
+        button.find('.like-count').text(data.like_count);
+    })
+    .fail(function(xhr) {
+        alert(xhr.responseJSON.error || '오류가 발생했습니다.');
+    });
+});
+
+// 댓글 작성
+$('#comment-form').submit(function(e) {
+    e.preventDefault();
+    const pageId = $(this).data('page-id');
+    const form = $(this);
+    
+    const data = {
+        content: form.find('[name="content"]').val(),
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+    };
+    
+    if (!{{ user.is_authenticated|yesno:"true,false" }}) {
+        data.author_name = form.find('[name="author_name"]').val();
+        data.author_email = form.find('[name="author_email"]').val();
+    }
+    
+    $.ajax({
+        url: `/pages/${pageId}/comment/`,
+        type: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .done(function(response) {
+        if (response.pending) {
+            alert(response.message);
+        } else if (response.comment) {
+            // 새 댓글 추가
+            const comment = response.comment;
+            const commentHtml = `
+                <div class="comment mb-4 ${comment.is_filtered ? 'filtered-comment' : ''}">
+                    <div class="d-flex">
+                        <div class="comment-avatar me-3">
+                            <div class="avatar-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div class="comment-content flex-grow-1">
+                            <div class="comment-header">
+                                <strong>${comment.author}</strong>
+                                <span class="text-muted ms-2">방금</span>
+                                ${comment.is_filtered ? '<span class="badge bg-warning text-dark ms-2">필터링됨</span>' : ''}
+                            </div>
+                            <div class="comment-body mt-2">
+                                ${comment.content.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('.comments-list').prepend(commentHtml);
+        }
+        form[0].reset();
+    })
+    .fail(function(xhr) {
+        alert(xhr.responseJSON.error || '오류가 발생했습니다.');
+    });
+});
+</script>
+{% endblock %}

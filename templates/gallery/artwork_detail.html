@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ artwork.title }} - {{ artwork.artist.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- 작품 이미지 -->
+        <div class="col-lg-7">
+            {% if artwork.images.all %}
+            <div id="artworkCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for image in artwork.images.all %}
+                    <button type="button" data-bs-target="#artworkCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                            {% if forloop.first %}class="active" aria-current="true"{% endif %} 
+                            aria-label="Slide {{ forloop.counter }}"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for image in artwork.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100 rounded shadow" alt="{{ artwork.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if artwork.images.count > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#artworkCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">이전</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#artworkCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">다음</span>
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- 썸네일 -->
+            {% if artwork.images.count > 1 %}
+            <div class="row g-2 mt-3">
+                {% for image in artwork.images.all %}
+                <div class="col-3">
+                    <img src="{{ image.image.url }}" class="img-fluid rounded cursor-pointer thumbnail-img" 
+                         data-bs-target="#artworkCarousel" data-bs-slide-to="{{ forloop.counter0 }}" alt="">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="artwork-placeholder rounded shadow d-flex align-items-center justify-content-center" 
+                 style="height: 500px; background: #f8f9fa;">
+                <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- 작품 정보 -->
+        <div class="col-lg-5">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'gallery:artist_list' %}">작가</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'gallery:artist_detail' artwork.artist.id %}">{{ artwork.artist.name }}</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ artwork.title|truncatechars:20 }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-5 mb-2">{{ artwork.title }}</h1>
+            {% if artwork.title_en %}
+            <p class="text-muted fs-5 mb-4">{{ artwork.title_en }}</p>
+            {% endif %}
+            
+            <!-- 작가 정보 -->
+            <div class="artist-info mb-4 p-3 bg-light rounded">
+                <h5 class="mb-3">작가</h5>
+                <div class="d-flex align-items-center">
+                    {% if artwork.artist.profile_image %}
+                    <img src="{{ artwork.artist.profile_image.url }}" alt="{{ artwork.artist.name }}" 
+                         class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-0">
+                            <a href="{% url 'gallery:artist_detail' artwork.artist.id %}" class="text-decoration-none">
+                                {{ artwork.artist.name }}
+                            </a>
+                        </h6>
+                        {% if artwork.artist.name_en %}
+                        <small class="text-muted">{{ artwork.artist.name_en }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 작품 상세 정보 -->
+            <div class="artwork-details mb-4">
+                <h5 class="mb-3">작품 정보</h5>
+                <table class="table table-borderless">
+                    {% if artwork.year %}
+                    <tr>
+                        <th class="text-muted" style="width: 30%;">제작연도</th>
+                        <td>{{ artwork.year }}년</td>
+                    </tr>
+                    {% endif %}
+                    {% if artwork.medium %}
+                    <tr>
+                        <th class="text-muted">재료/기법</th>
+                        <td>{{ artwork.medium }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if artwork.size %}
+                    <tr>
+                        <th class="text-muted">크기</th>
+                        <td>{{ artwork.size }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if artwork.edition %}
+                    <tr>
+                        <th class="text-muted">에디션</th>
+                        <td>{{ artwork.edition }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if artwork.price and artwork.show_price %}
+                    <tr>
+                        <th class="text-muted">가격</th>
+                        <td class="fw-bold text-primary">₩ {{ artwork.price|intcomma }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if artwork.status %}
+                    <tr>
+                        <th class="text-muted">상태</th>
+                        <td>
+                            {% if artwork.status == 'available' %}
+                            <span class="badge bg-success">판매가능</span>
+                            {% elif artwork.status == 'sold' %}
+                            <span class="badge bg-danger">판매완료</span>
+                            {% elif artwork.status == 'reserved' %}
+                            <span class="badge bg-warning">예약중</span>
+                            {% else %}
+                            <span class="badge bg-secondary">전시전용</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            
+            <!-- 작품 설명 -->
+            {% if artwork.description %}
+            <div class="artwork-description mb-4">
+                <h5 class="mb-3">작품 설명</h5>
+                {{ artwork.description|linebreaks }}
+            </div>
+            {% endif %}
+            
+            <!-- 문의 버튼 -->
+            <div class="d-grid gap-2">
+                {% if artwork.status == 'available' and artwork.show_price %}
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#inquiryModal">
+                    <i class="fas fa-envelope"></i> 작품 문의하기
+                </button>
+                {% endif %}
+                <button class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> 인쇄하기
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 관련 작품 -->
+    {% if related_artworks %}
+    <div class="related-artworks mt-5 pt-5 border-top">
+        <h3 class="mb-4">{{ artwork.artist.name }}의 다른 작품</h3>
+        <div class="row g-4">
+            {% for related in related_artworks %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'gallery:artwork_detail' related.id %}" class="text-decoration-none">
+                    <div class="card h-100 related-artwork-card">
+                        {% if related.images.first %}
+                        <img src="{{ related.images.first.image.url }}" class="card-img-top" alt="{{ related.title }}" 
+                             style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 200px;">
+                            <i class="fas fa-image fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title text-dark">{{ related.title }}</h6>
+                            {% if related.year %}
+                            <p class="card-text small text-muted">{{ related.year }}년</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 문의 모달 -->
+<div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inquiryModalLabel">작품 문의</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>작품에 대한 문의는 아래 연락처로 부탁드립니다.</p>
+                <div class="contact-info p-3 bg-light rounded">
+                    <p class="mb-2"><i class="fas fa-phone"></i> 전화: 02-1234-5678</p>
+                    <p class="mb-2"><i class="fas fa-envelope"></i> 이메일: info@hanaart.com</p>
+                    <p class="mb-0"><i class="fas fa-clock"></i> 운영시간: 평일 10:00 - 18:00</p>
+                </div>
+                <div class="mt-3">
+                    <p class="small text-muted">작품명: {{ artwork.title }}</p>
+                    <p class="small text-muted">작가: {{ artwork.artist.name }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.thumbnail-img {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.thumbnail-img:hover {
+    opacity: 1;
+}
+
+.related-artwork-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.related-artwork-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+@media print {
+    .navbar, .breadcrumb, .btn, .related-artworks, .modal {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 썸네일 클릭 시 캐러셀 이동
+$('.thumbnail-img').click(function() {
+    const slideTo = $(this).data('bs-slide-to');
+    $('#artworkCarousel').carousel(slideTo);
+});
+</script>
+{% endblock %}
