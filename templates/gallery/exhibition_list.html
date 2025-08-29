@@ -5,23 +5,74 @@
 
 {% block extra_css %}
 <style>
-    .page-header {
+    /* Hero Section */
+    .exhibition-hero {
+        position: relative;
+        height: 30vh;
+        min-height: 250px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 120px 0 80px;
-        margin-top: -76px;
-        padding-top: 156px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
     
-    .page-header h1 {
+    .exhibition-hero::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,181.3C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat;
+        background-size: cover;
+        animation: wave 20s linear infinite;
+    }
+    
+    @keyframes wave {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
         color: white;
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
     }
     
-    .page-header p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1.2rem;
+    .hero-content h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        animation: fadeInDown 0.8s ease;
+    }
+    
+    .hero-content p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .exhibitions-container {
@@ -174,16 +225,23 @@
         margin-bottom: 10px;
         color: #374151;
     }
+    
+    @media (max-width: 768px) {
+        .exhibition-hero h1 {
+            font-size: 2rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container text-center">
+<!-- Hero Section -->
+<section class="exhibition-hero">
+    <div class="hero-content">
         <h1>전시</h1>
         <p>하나아트갤러리의 다양한 전시를 만나보세요</p>
     </div>
-</div>
+</section>
 
 <div class="exhibitions-container">
     <div class="container">
