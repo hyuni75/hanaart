@@ -22,16 +22,16 @@
                 <div class="card-body">
                     <h5 class="card-title">작가 정보</h5>
                     <ul class="list-unstyled mb-0">
-                        {% if artist.birth_date %}
+                        {% if artist.birth_year %}
                         <li class="mb-2">
                             <i class="far fa-calendar text-muted"></i>
-                            <span class="ms-2">{{ artist.birth_date|date:"Y년 m월 d일" }} 출생</span>
+                            <span class="ms-2">{{ artist.birth_year }}년 출생</span>
                         </li>
                         {% endif %}
-                        {% if artist.nationality %}
+                        {% if artist.is_exclusive %}
                         <li class="mb-2">
-                            <i class="fas fa-globe text-muted"></i>
-                            <span class="ms-2">{{ artist.nationality }}</span>
+                            <i class="fas fa-star text-muted"></i>
+                            <span class="ms-2">전속 작가</span>
                         </li>
                         {% endif %}
                         {% if artist.education %}
@@ -53,7 +53,7 @@
             </div>
             
             <!-- SNS 링크 -->
-            {% if artist.website or artist.instagram or artist.facebook %}
+            {% if artist.website or artist.instagram %}
             <div class="card mt-3">
                 <div class="card-body">
                     <h5 class="card-title">연결</h5>
@@ -64,13 +64,8 @@
                         </a>
                         {% endif %}
                         {% if artist.instagram %}
-                        <a href="{{ artist.instagram }}" target="_blank" class="btn btn-outline-danger btn-sm">
+                        <a href="https://instagram.com/{{ artist.instagram }}" target="_blank" class="btn btn-outline-danger btn-sm">
                             <i class="fab fa-instagram"></i> 인스타그램
-                        </a>
-                        {% endif %}
-                        {% if artist.facebook %}
-                        <a href="{{ artist.facebook }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                            <i class="fab fa-facebook"></i> 페이스북
                         </a>
                         {% endif %}
                     </div>
@@ -91,16 +86,6 @@
             <div class="artist-bio mb-4">
                 <h3 class="mb-3">작가 소개</h3>
                 {{ artist.bio|linebreaks }}
-            </div>
-            {% endif %}
-            
-            <!-- 주요 경력 -->
-            {% if artist.major_career %}
-            <div class="major-career mb-4">
-                <h3 class="mb-3">주요 경력</h3>
-                <div class="timeline">
-                    {{ artist.major_career|linebreaks }}
-                </div>
             </div>
             {% endif %}
             
