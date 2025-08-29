@@ -54,11 +54,13 @@ templates/     # 모든 템플릿 파일 (앱별 분리 없이 직접 저장)
 ### 1. 앱 생성 및 관리
 - 새로운 Django 앱은 `apps/` 디렉토리에 생성
 - 모든 템플릿은 `templates/` 디렉토리에 직접 저장 (앱별 분리 없음)
+- View-Template 매핑 규칙은 `TEMPLATE_VIEW_GUIDE.md` 참조
 
 ### 2. UI/UX 일관성
 - 기본 브라우저 알람창이나 모달 사용 금지
-- 공통 모달창과 공통 토스트창을 사전 정의하여 사용
+- 공통 모달창과 공통 토스트창을 사전 정의하여 사용 (`templates/components/` 참조)
 - 일관된 사용자 경험 제공
+- 템플릿 작성 시 `TEMPLATE_VIEW_GUIDE.md` 규칙 준수
 
 ### 3. 코드 변경 후 필수 작업
 - 프론트엔드/백엔드 코드 추가, 수정, 삭제 시 반드시 실행:
@@ -92,6 +94,8 @@ git push -u origin main
 3. CRUD 로직 중심의 개발
 4. Docker Compose 기반 컨테이너 환경
 5. MariaDB 데이터베이스 사용
+6. **템플릿-뷰 연결 가이드**: `TEMPLATE_VIEW_GUIDE.md` 파일 참조 필수
+7. **앱 구조 가이드**: `APP_STRUCTURE_GUIDE.md` 파일 참조 필수
 
 ---
 *이 문서는 HanaArt 프로젝트의 개발 가이드라인입니다.*

@@ -33,6 +33,13 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*'] if DEBUG else os.environ.get('ALLOWED_HOSTS', '').split(',')
 
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    'http://192.168.100.10:8086',
+    'http://localhost:8086',
+    'http://127.0.0.1:8086',
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -49,12 +56,7 @@ INSTALLED_APPS = [
     # Local apps
     'main',
     'apps.core',
-    'apps.navigator',
-    'apps.pagebuilder',
     'apps.gallery',
-    'apps.interaction',
-    'apps.moderation',
-    'apps.adminpanel',
 ]
 
 # Django 5.0의 경우 추가 앱

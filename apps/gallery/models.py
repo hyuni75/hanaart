@@ -34,17 +34,26 @@ class Artist(TimeStampedModel):
         return self.name
     
     def save(self, *args, **kwargs):
-        # 프로필 이미지 최적화
-        if self.profile_image:
-            # 이미지가 변경되었는지 확인
+        # 프로필 이미지 최적화 - 삭제 작업 시에는 이미지 처리 건너뛰기
+        if self.profile_image and not kwargs.get('force_insert', False):
             try:
-                old_instance = Artist.objects.get(pk=self.pk)
-                if old_instance.profile_image != self.profile_image:
-                    # 이미지 최적화 (최대 800x800)
+                # 이미지가 변경되었는지 확인
+                if self.pk:
+                    try:
+                        old_instance = Artist.objects.get(pk=self.pk)
+                        if old_instance.profile_image != self.profile_image and hasattr(self.profile_image, 'file'):
+                            # 이미지 최적화 (최대 800x800)
+                            self.profile_image = ImageOptimizer.create_medium(self.profile_image)
+                    except Artist.DoesNotExist:
+                        pass
+                elif hasattr(self.profile_image, 'file'):
+                    # 새 객체인 경우
                     self.profile_image = ImageOptimizer.create_medium(self.profile_image)
-            except Artist.DoesNotExist:
-                # 새 객체인 경우
-                self.profile_image = ImageOptimizer.create_medium(self.profile_image)
+            except Exception as e:
+                # 이미지 처리 실패 시 원본 유지
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"이미지 최적화 실패: {e}")
         
         super().save(*args, **kwargs)
 

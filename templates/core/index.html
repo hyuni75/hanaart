@@ -114,189 +114,37 @@ body {
     opacity: 0;
     animation: fadeInUp 1.5s ease 0.5s forwards;
     text-transform: uppercase;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
-/* Current Exhibition Section */
-.current-exhibition {
-    padding: 120px 0;
-    background: white;
-    position: relative;
-}
-
-.exhibition-header {
-    text-align: center;
-    margin-bottom: 80px;
-}
-
-.exhibition-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 4rem;
-    font-weight: 900;
-    color: var(--dark);
-    margin-bottom: 20px;
-    position: relative;
-    display: inline-block;
-}
-
-.exhibition-header h2::after {
-    content: '';
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 4px;
-    background: var(--primary);
-}
-
-/* Exhibition Artists Grid */
-.artists-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.artist-card {
-    position: relative;
-    height: 500px;
-    cursor: pointer;
-    overflow: hidden;
-    border-radius: 0;
-    transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
-}
-
-.artist-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
-    z-index: 2;
-    transition: opacity 0.6s ease;
-}
-
-.artist-card:hover::before {
-    opacity: 0.3;
-}
-
-.artist-images {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.artist-image {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+.hero-cta {
     opacity: 0;
-    transition: opacity 1s ease, transform 6s ease;
+    animation: fadeInUp 1.5s ease 0.8s forwards;
 }
 
-.artist-image.active {
-    opacity: 1;
-}
-
-.artist-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scale(1.1);
-}
-
-.artist-card:hover .artist-image img {
-    transform: scale(1.2);
-}
-
-.artist-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px;
-    z-index: 3;
-    color: white;
-    transform: translateY(20px);
-    transition: transform 0.6s ease;
-}
-
-.artist-card:hover .artist-info {
-    transform: translateY(0);
-}
-
-.artist-name {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    letter-spacing: 0.05em;
-}
-
-.artist-title {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    opacity: 0.9;
-}
-
-.explore-btn {
+.exhibition-btn {
     display: inline-block;
-    padding: 12px 40px;
-    background: white;
-    color: var(--dark);
+    padding: 15px 50px;
+    background: var(--primary);
+    color: white;
     text-decoration: none;
+    font-size: 1.1rem;
     font-weight: 600;
+    letter-spacing: 0.1em;
     transition: all 0.3s ease;
-    opacity: 0;
-    transform: translateY(20px);
+    text-transform: uppercase;
+    border: 2px solid var(--primary);
 }
 
-.artist-card:hover .explore-btn {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.explore-btn:hover {
-    background: var(--primary);
+.exhibition-btn:hover {
+    background: transparent;
     color: white;
+    border-color: white;
+    transform: translateY(-2px);
 }
 
-/* Dynamic Artist Modal */
-.artist-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 10000;
-    display: none;
-    overflow-y: auto;
-}
 
-.artist-modal.active {
-    display: block;
-}
-
-.modal-hero {
-    position: relative;
-    height: 100vh;
-    overflow: hidden;
-}
-
-.modal-gallery {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.modal-slide {
-    position: absolute;
-    width: 100%;
+/* Removed unused modal styles - now using direct artist detail page links */
     height: 100%;
     opacity: 0;
     transition: opacity 1.5s ease;
@@ -452,280 +300,51 @@ body {
 <!-- Dynamic Hero Section -->
 <section class="hero-section">
     <div class="hero-slides">
+        {% for artwork in all_artworks %}
+        <div class="hero-slide {% if forloop.first %}active{% endif %}">
+            {% if artwork.main_image %}
+            <img src="{{ artwork.main_image.url }}" alt="{{ artwork.title }}">
+            {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}" alt="{{ artwork.title }}">
+            {% endif %}
+        </div>
+        {% empty %}
         <div class="hero-slide active">
-            <img src="{% static 'images/gallery/ihan_01.jpg' %}" alt="">
+            <img src="{% static 'images/placeholder.jpg' %}" alt="Gallery">
         </div>
-        <div class="hero-slide">
-            <img src="{% static 'images/gallery/hagumsuk_01.jpg' %}" alt="">
-        </div>
-        <div class="hero-slide">
-            <img src="{% static 'images/gallery/kimjeomsun_01.jpg' %}" alt="">
-        </div>
+        {% endfor %}
     </div>
     
     <div class="hero-content">
         <h1 class="hero-title">HANA<br>ART<br>GALLERY</h1>
         <p class="hero-subtitle">Contemporary Art Space</p>
-    </div>
-</section>
-
-<!-- Current Exhibition Section -->
-<section class="current-exhibition" id="currentExhibition">
-    <div class="exhibition-header">
-        <h2>CURRENT EXHIBITION</h2>
-        <p class="lead text-muted">THE JOURNEY 2025</p>
-    </div>
-    
-    <div class="artists-grid">
-        <!-- 이한 카드 -->
-        <div class="artist-card" data-artist="ihan">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/ihan_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/ihan_02.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/ihan_03.jpg' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">이한</h3>
-                <p class="artist-title">도시의 빛 Urban Light</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('ihan'); return false;">
-                    자세히 보기
-                </a>
-            </div>
-        </div>
-        
-        <!-- 하금숙 카드 -->
-        <div class="artist-card" data-artist="hagumsuk">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/hagumsuk_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/hagumsuk_02.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/hagumsuk_03.jpg' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">하금숙</h3>
-                <p class="artist-title">자연의 숨결 Breath of Nature</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('hagumsuk'); return false;">
-                    자세히 보기
-                </a>
-            </div>
-        </div>
-        
-        <!-- 김점선 카드 -->
-        <div class="artist-card" data-artist="kimjeomsun">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/kimjeomsun_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/kimjeomsun_02.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/kimjeomsun_03.JPG' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">김점선</h3>
-                <p class="artist-title">경계의 미학 Aesthetics of Boundary</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('kimjeomsun'); return false;">
-                    자세히 보기
-                </a>
-            </div>
-        </div>
-        
-        <!-- 추가 작가들 -->
-        <div class="artist-card" data-artist="kimjs">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/kimjs_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/kimjs_02.jpg' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">김종성</h3>
-                <p class="artist-title">생명의 순환 Cycle of Life</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('kimjs'); return false;">
-                    자세히 보기
-                </a>
-            </div>
-        </div>
-        
-        <div class="artist-card" data-artist="leeho">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/leeho_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/leeho_02.jpg' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">이호</h3>
-                <p class="artist-title">정적 Silence</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('leeho'); return false;">
-                    자세히 보기
-                </a>
-            </div>
-        </div>
-        
-        <div class="artist-card" data-artist="parksy">
-            <div class="artist-images">
-                <div class="artist-image active">
-                    <img src="{% static 'images/gallery/parksy_01.jpg' %}" alt="">
-                </div>
-                <div class="artist-image">
-                    <img src="{% static 'images/gallery/parksy_02.jpg' %}" alt="">
-                </div>
-            </div>
-            <div class="artist-info">
-                <h3 class="artist-name">박신영</h3>
-                <p class="artist-title">일상의 재발견 Rediscovery</p>
-                <a href="#" class="explore-btn" onclick="openArtistModal('parksy'); return false;">
-                    자세히 보기
-                </a>
-            </div>
+        <div class="hero-cta">
+            {% if exhibition_link %}
+            <a href="{{ exhibition_link }}" class="exhibition-btn">현재 전시작품 보러가기</a>
+            {% endif %}
         </div>
     </div>
 </section>
 
-<!-- Artist Modal -->
-<div class="artist-modal" id="artistModal">
-    <div class="modal-close" onclick="closeArtistModal()">
-        <i class="bi bi-x-lg"></i>
-    </div>
-    
-    <div class="modal-hero">
-        <div class="modal-gallery" id="modalGallery">
-            <!-- Dynamic content will be inserted here -->
-        </div>
-        <div class="modal-content" id="modalContent">
-            <!-- Dynamic content will be inserted here -->
-        </div>
-    </div>
-    
-    <div class="modal-details" id="modalDetails">
-        <!-- Dynamic content will be inserted here -->
-    </div>
-</div>
+
+
 
 <script>
-// Artist data
-const artistsData = {
-    ihan: {
-        name: '이한',
-        nameEn: 'Lee Han',
-        bio: '도시 풍경과 현대인의 삶을 독특한 색채로 표현하는 작가입니다. 홍익대학교 미술대학 회화과를 졸업하고 파리 국립미술학교에서 수학했습니다.',
-        images: [
-            '{% static "images/gallery/ihan_01.jpg" %}',
-            '{% static "images/gallery/ihan_02.jpg" %}',
-            '{% static "images/gallery/ihan_03.jpg" %}',
-            '{% static "images/gallery/ihan_a.jpg" %}',
-            '{% static "images/gallery/ihan_b.jpg" %}',
-            '{% static "images/gallery/ihan_c.jpg" %}'
-        ],
-        works: [
-            {title: '도시의 밤', year: 2024, medium: '캔버스에 유채', size: '145.5 x 112 cm'},
-            {title: '빛의 도시', year: 2024, medium: '캔버스에 아크릴', size: '130 x 162 cm'},
-            {title: '도시 풍경', year: 2023, medium: '캔버스에 유채', size: '100 x 120 cm'}
-        ],
-        exhibitions: '2024 The Journey (하나아트갤러리)\n2023 도시의 빛 개인전\n2022 서울아트페어'
-    },
-    hagumsuk: {
-        name: '하금숙',
-        nameEn: 'Ha Geum Sook',
-        bio: '한국 전통 회화를 현대적으로 재해석하는 작가로, 자연과 인간의 조화를 주제로 작업합니다. 서울대학교 미술대학 동양화과를 졸업했습니다.',
-        images: [
-            '{% static "images/gallery/hagumsuk_01.jpg" %}',
-            '{% static "images/gallery/hagumsuk_02.jpg" %}',
-            '{% static "images/gallery/hagumsuk_03.jpg" %}'
-        ],
-        works: [
-            {title: '봄의 정원', year: 2024, medium: '한지에 수묵채색', size: '130 x 162 cm'},
-            {title: '바람의 노래', year: 2024, medium: '한지에 수묵', size: '100 x 100 cm'}
-        ],
-        exhibitions: '2024 The Journey (하나아트갤러리)\n2023 자연의 숨결 개인전\n2020 대한민국 미술대전 대상'
-    },
-    kimjeomsun: {
-        name: '김점선',
-        nameEn: 'Kim Jeom Sun',
-        bio: '추상과 구상의 경계를 넘나들며 독창적인 조형언어를 구축하는 작가입니다. 이화여자대학교 조형예술대학을 졸업하고 뉴욕 프랫 인스티튜트에서 MFA를 취득했습니다.',
-        images: [
-            '{% static "images/gallery/kimjeomsun_01.jpg" %}',
-            '{% static "images/gallery/kimjeomsun_02.jpg" %}',
-            '{% static "images/gallery/kimjeomsun_03.JPG" %}'
-        ],
-        works: [
-            {title: '경계의 시간', year: 2024, medium: '캔버스에 아크릴', size: '130 x 130 cm'}
-        ],
-        exhibitions: '2024 The Journey (하나아트갤러리)\n2021 광주비엔날레 특별상'
-    }
-};
-
 // Hero slide show
 let currentSlide = 0;
 const slides = document.querySelectorAll('.hero-slide');
 
 function changeSlide() {
-    slides[currentSlide].classList.remove('active');
-    currentSlide = (currentSlide + 1) % slides.length;
-    slides[currentSlide].classList.add('active');
+    if (slides.length > 1) {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
 }
 setInterval(changeSlide, 5000);
 
-// Artist card image rotation
-document.querySelectorAll('.artist-card').forEach(card => {
-    const images = card.querySelectorAll('.artist-image');
-    let currentImage = 0;
-    
-    setInterval(() => {
-        if (card.matches(':hover')) return;
-        images[currentImage].classList.remove('active');
-        currentImage = (currentImage + 1) % images.length;
-        images[currentImage].classList.add('active');
-    }, 3000);
-});
 
-// Artist Modal Functions
-function openArtistModal(artistId) {
-    const modal = document.getElementById('artistModal');
-    const artist = artistsData[artistId];
-    
-    if (!artist) return;
-    
-    // Create gallery slides
-    const galleryHTML = artist.images.map((img, idx) => `
-        <div class="modal-slide ${idx === 0 ? 'active' : ''}">
-            <img src="${img}" alt="">
-        </div>
-    `).join('');
-    
-    // Modal content
-    const contentHTML = `
-        <h1 class="modal-artist-name">${artist.name}</h1>
-        <p class="modal-artist-bio">${artist.bio}</p>
-    `;
-    
-    // Works grid
-    const worksHTML = `
-        <div class="container">
-            <h2 class="text-center mb-5">작품 Works</h2>
-            <div class="works-grid">
-                ${artist.works.map((work, idx) => `
-                    <div class="work-item">
-                        <img src="${artist.images[idx] || artist.images[0]}" alt="${work.title}">
-                        <div class="work-info">
+// Remove unused artist modal functions since we now link directly to artist detail page
                             <h4>${work.title}</h4>
                             <p>${work.year} | ${work.medium} | ${work.size}</p>
                         </div>
@@ -741,42 +360,5 @@ function openArtistModal(artistId) {
     
     document.getElementById('modalGallery').innerHTML = galleryHTML;
     document.getElementById('modalContent').innerHTML = contentHTML;
-    document.getElementById('modalDetails').innerHTML = worksHTML;
-    
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Start slideshow
-    startModalSlideshow();
-}
-
-function closeArtistModal() {
-    const modal = document.getElementById('artistModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-    
-    // Clear slideshow
-    if (window.modalSlideInterval) {
-        clearInterval(window.modalSlideInterval);
-    }
-}
-
-function startModalSlideshow() {
-    const slides = document.querySelectorAll('.modal-slide');
-    let current = 0;
-    
-    window.modalSlideInterval = setInterval(() => {
-        slides[current].classList.remove('active');
-        current = (current + 1) % slides.length;
-        slides[current].classList.add('active');
-    }, 4000);
-}
-
-// Close modal on ESC
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeArtistModal();
-    }
-});
 </script>
 {% endblock %}

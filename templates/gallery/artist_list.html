@@ -7,8 +7,8 @@
     /* Hero Section */
     .artist-hero {
         position: relative;
-        height: 50vh;
-        min-height: 400px;
+        height: 30vh;
+        min-height: 250px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
@@ -37,14 +37,14 @@
     }
     
     .hero-content h1 {
-        font-size: 3.5rem;
+        font-size: 2.5rem;
         font-weight: 700;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .hero-content p {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         opacity: 0.95;
     }
     
@@ -130,7 +130,9 @@
             <div class="col-md-4 artist-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
                 <div class="artist-card">
                     <div class="artist-image-wrapper">
-                        {% if artist.profile_image %}
+                        {% if artist.artworks.first and artist.artworks.first.main_image %}
+                        <img src="{{ artist.artworks.first.main_image.url }}" alt="{{ artist.name }} - {{ artist.artworks.first.title }}">
+                        {% elif artist.profile_image %}
                         <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}">
                         {% else %}
                         <div class="placeholder-img">
@@ -139,9 +141,15 @@
                         {% endif %}
                         <div class="artist-overlay">
                             <div class="overlay-content">
+                                {% if artist.artworks.first %}
+                                <div class="artwork-info">
+                                    <p class="artwork-title">{{ artist.artworks.first.title }}</p>
+                                    <p class="artwork-year">{{ artist.artworks.first.year|default:"" }}</p>
+                                </div>
+                                {% endif %}
                                 <a href="{% url 'gallery:artist_detail' artist.id %}" class="view-btn">
                                     <i class="bi bi-eye"></i>
-                                    View Portfolio
+                                    작가 보기
                                 </a>
                             </div>
                         </div>
@@ -184,7 +192,9 @@
             <div class="col-md-4 artist-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
                 <div class="artist-card regular">
                     <div class="artist-image-wrapper">
-                        {% if artist.profile_image %}
+                        {% if artist.artworks.first and artist.artworks.first.main_image %}
+                        <img src="{{ artist.artworks.first.main_image.url }}" alt="{{ artist.name }} - {{ artist.artworks.first.title }}">
+                        {% elif artist.profile_image %}
                         <img src="{{ artist.profile_image.url }}" alt="{{ artist.name }}">
                         {% else %}
                         <div class="placeholder-img">
@@ -193,9 +203,15 @@
                         {% endif %}
                         <div class="artist-overlay">
                             <div class="overlay-content">
+                                {% if artist.artworks.first %}
+                                <div class="artwork-info">
+                                    <p class="artwork-title">{{ artist.artworks.first.title }}</p>
+                                    <p class="artwork-year">{{ artist.artworks.first.year|default:"" }}</p>
+                                </div>
+                                {% endif %}
                                 <a href="{% url 'gallery:artist_detail' artist.id %}" class="view-btn">
                                     <i class="bi bi-eye"></i>
-                                    View Portfolio
+                                    작가 보기
                                 </a>
                             </div>
                         </div>
@@ -257,9 +273,9 @@
     
     .artist-image-wrapper {
         position: relative;
-        height: 350px;
+        height: 400px;
         overflow: hidden;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #f0f0f0;
     }
     
     .artist-image-wrapper img {
@@ -293,13 +309,41 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%);
+        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.9) 100%);
         opacity: 0;
         transition: opacity 0.4s ease;
         display: flex;
-        align-items: flex-end;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
         padding: 2rem;
+    }
+    
+    .overlay-content {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .artwork-info {
+        color: white;
+        margin-bottom: 1.5rem;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+    
+    .artist-card:hover .artwork-info {
+        transform: translateY(0);
+    }
+    
+    .artwork-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    
+    .artwork-year {
+        font-size: 0.9rem;
+        opacity: 0.8;
     }
     
     .artist-card:hover .artist-overlay {

@@ -99,10 +99,10 @@
                         <a class="nav-link" href="{% url 'gallery:artist_list' %}">작가</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'gallery:exhibition_detail' 'the-journey-2025' %}">전시</a>
+                        <a class="nav-link" href="{% url 'gallery:exhibition_list' %}">전시</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pagebuilder:page_list' %}">페이지</a>
+                        <!-- 페이지 메뉴 제거 (pagebuilder 앱 삭제) -->
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'gallery:frame' %}">액자제작</a>
@@ -113,11 +113,11 @@
                     
                     <li class="nav-item ms-3">
                         {% if user.is_authenticated and user.is_staff %}
-                        <a class="nav-link btn btn-outline-primary btn-sm px-3" href="{% url 'adminpanel:dashboard' %}">
+                        <a class="nav-link btn btn-outline-primary btn-sm px-3" href="{% url 'gallery:admin_dashboard' %}">
                             <i class="bi bi-gear"></i> 관리
                         </a>
                         {% else %}
-                        <a class="nav-link btn btn-outline-secondary btn-sm px-3" href="{% url 'adminpanel:login' %}">
+                        <a class="nav-link btn btn-outline-secondary btn-sm px-3" href="{% url 'gallery:manage_login' %}">
                             <i class="bi bi-lock"></i> 관리자
                         </a>
                         {% endif %}
@@ -133,28 +133,6 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- 푸터 -->
-    <footer class="bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>하나아트갤러리</h5>
-                    <p class="text-muted">
-                        서울특별시 종로구 인사동10길 2, 단성빌딩 2층<br>
-                        T. 02-736-7877 | F. 02-736-4877
-                    </p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <div class="mb-3">
-                        <a href="https://www.instagram.com/hanaartgallery_offical/" target="_blank" class="text-muted me-3">
-                            <i class="bi bi-instagram fs-4"></i>
-                        </a>
-                    </div>
-                    <p class="text-muted small">© HANA ART GALLERY. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
     
     <!-- 공통 모달 (CLAUDE.md 규칙 준수) -->
     <div class="modal fade" id="commonModal" tabindex="-1" aria-hidden="true">

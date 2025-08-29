@@ -410,10 +410,19 @@
 {% block extra_js %}
 <script>
 function deleteArtist(id, name) {
+    console.log('deleteArtist 호출됨:', id, name);
+    
+    if (typeof hanaModal === 'undefined') {
+        console.error('hanaModal이 정의되지 않았습니다!');
+        alert('모달 시스템이 로드되지 않았습니다. 페이지를 새로고침 해주세요.');
+        return;
+    }
+    
     hanaModal.confirmDelete(name + ' 작가', function() {
+        console.log('삭제 확인됨, 요청 전송 중...');
         showLoading();
         
-        fetch(`/gallery/admin/artists/${id}/delete/`, {
+        fetch(`/manage/artists/${id}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),

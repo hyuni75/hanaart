@@ -23,13 +23,15 @@ def health_check(request):
     return JsonResponse({'status': 'healthy'})
 
 urlpatterns = [
+    # 공개 페이지
     path('', include('apps.core.urls')),
-    path('', include('apps.navigator.urls')),
-    path('', include('apps.gallery.urls')),
-    path('', include('apps.adminpanel.urls')),
-    path('pages/', include('apps.pagebuilder.urls')),
+    path('', include('apps.gallery.urls')),  # gallery 앱 (공개 + 관리)
+    
+    # Django Admin 비활성화 (manage 페이지로 완전 대체)
+    # path('admin/', admin.site.urls),
+    
+    # 기타
     path('health/', health_check, name='health_check'),
-    path('admin/', admin.site.urls),
     path('api/', include('rest_framework.urls')),
     path('api/v1/', include('main.urls')),
 ]

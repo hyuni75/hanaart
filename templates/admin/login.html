@@ -1,0 +1,411 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 하나아트갤러리 관리자</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #e51c23;
+            --dark-color: #222;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --transition: all 0.2s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: var(--gray-100);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        /* Login Container */
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        /* Logo Section */
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-img {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark-color);
+            letter-spacing: -0.5px;
+        }
+        
+        .login-subtitle {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+        
+        /* Login Card */
+        .login-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .login-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-description {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .form-control-login {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--white);
+        }
+        
+        .form-control-login:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(229, 28, 35, 0.1);
+        }
+        
+        .form-control-login::placeholder {
+            color: var(--gray-500);
+        }
+        
+        /* Input with Icon */
+        .input-group-login {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: 16px;
+            pointer-events: none;
+        }
+        
+        .input-with-icon {
+            padding-left: 2.75rem;
+        }
+        
+        /* Remember Me */
+        .form-check-login {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-check-input-login {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .form-check-label-login {
+            font-size: 14px;
+            color: var(--gray-700);
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        /* Submit Button */
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-login:hover {
+            background: #d01920;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229, 28, 35, 0.2);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+        }
+        
+        /* Error Messages */
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .error-icon {
+            flex-shrink: 0;
+        }
+        
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .footer-link {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .footer-link:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--white);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        
+        .btn-login.loading .spinner {
+            display: inline-block;
+        }
+        
+        .btn-login.loading .btn-text {
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 1.5rem;
+            }
+            
+            .logo-img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .logo-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Logo -->
+        <div class="login-logo">
+            <div class="logo-wrapper">
+                <img src="{% static 'images/gallery/ci_hana.png' %}" alt="HANA" class="logo-img">
+                <span class="logo-text">HANA ART GALLERY</span>
+            </div>
+            <p class="login-subtitle">관리자 시스템</p>
+        </div>
+        
+        <!-- Login Card -->
+        <div class="login-card">
+            <div class="login-header">
+                <h1 class="login-title">로그인</h1>
+                <p class="login-description">관리자 계정으로 로그인하세요</p>
+            </div>
+            
+            <!-- Error Messages -->
+            {% if form.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle error-icon"></i>
+                <span>아이디 또는 비밀번호가 올바르지 않습니다.</span>
+            </div>
+            {% endif %}
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div class="error-message">
+                    <i class="fas fa-info-circle error-icon"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Login Form -->
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username" class="form-label">아이디</label>
+                    <div class="input-group-login">
+                        <i class="fas fa-user input-icon"></i>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="id_username" 
+                            class="form-control-login input-with-icon" 
+                            placeholder="아이디를 입력하세요"
+                            required
+                            autofocus
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password" class="form-label">비밀번호</label>
+                    <div class="input-group-login">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="id_password" 
+                            class="form-control-login input-with-icon" 
+                            placeholder="비밀번호를 입력하세요"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-check-login">
+                    <input 
+                        type="checkbox" 
+                        name="remember" 
+                        id="remember" 
+                        class="form-check-input-login"
+                    >
+                    <label for="remember" class="form-check-label-login">
+                        로그인 상태 유지
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span class="btn-text">로그인</span>
+                    <div class="spinner"></div>
+                </button>
+                
+                {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+            </form>
+            
+            <div class="login-footer">
+                <a href="/" class="footer-link">
+                    <i class="fas fa-arrow-left"></i> 메인 사이트로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Form submission handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+        });
+        
+        // Auto-focus on error
+        {% if form.errors %}
+        document.getElementById('id_username').focus();
+        document.getElementById('id_username').select();
+        {% endif %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}전시 - 하나아트갤러리{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 120px 0 80px;
+        margin-top: -76px;
+        padding-top: 156px;
+    }
+    
+    .page-header h1 {
+        color: white;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .page-header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+    }
+    
+    .exhibitions-container {
+        padding: 80px 0;
+        background: #f8f9fa;
+    }
+    
+    .exhibition-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 40px;
+    }
+    
+    .exhibition-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .exhibition-image {
+        position: relative;
+        height: 400px;
+        overflow: hidden;
+        background: #f0f0f0;
+    }
+    
+    .exhibition-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .exhibition-card:hover .exhibition-image img {
+        transform: scale(1.05);
+    }
+    
+    .exhibition-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 8px 16px;
+        background: #e51c23;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 1;
+    }
+    
+    .exhibition-badge.upcoming {
+        background: #10b981;
+    }
+    
+    .exhibition-badge.past {
+        background: #6b7280;
+    }
+    
+    .exhibition-content {
+        padding: 30px;
+    }
+    
+    .exhibition-date {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    
+    .exhibition-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+    
+    .exhibition-title-en {
+        color: #6b7280;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        font-style: italic;
+    }
+    
+    .exhibition-description {
+        color: #4b5563;
+        line-height: 1.8;
+        margin-bottom: 20px;
+    }
+    
+    .exhibition-artists {
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .exhibition-artists h5 {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .artist-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .artist-tag {
+        padding: 6px 12px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+    
+    .btn-view-exhibition {
+        display: inline-block;
+        padding: 12px 30px;
+        background: #e51c23;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        margin-top: 20px;
+    }
+    
+    .btn-view-exhibition:hover {
+        background: #c91920;
+        color: white;
+    }
+    
+    .no-exhibitions {
+        text-align: center;
+        padding: 100px 20px;
+        color: #6b7280;
+    }
+    
+    .no-exhibitions i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #d1d5db;
+    }
+    
+    .no-exhibitions h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #374151;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container text-center">
+        <h1>전시</h1>
+        <p>하나아트갤러리의 다양한 전시를 만나보세요</p>
+    </div>
+</div>
+
+<div class="exhibitions-container">
+    <div class="container">
+        <div class="row">
+            {% for exhibition in exhibitions %}
+            <div class="col-lg-6">
+                <div class="exhibition-card">
+                    <div class="exhibition-image">
+                        {% if exhibition.is_current %}
+                        <span class="exhibition-badge">현재 전시</span>
+                        {% elif exhibition.start_date > today %}
+                        <span class="exhibition-badge upcoming">예정 전시</span>
+                        {% else %}
+                        <span class="exhibition-badge past">지난 전시</span>
+                        {% endif %}
+                        
+                        {% if exhibition.poster_image %}
+                        <img src="{{ exhibition.poster_image.url }}" alt="{{ exhibition.title }}">
+                        {% else %}
+                        <img src="{% static 'images/placeholder.jpg' %}" alt="{{ exhibition.title }}">
+                        {% endif %}
+                    </div>
+                    
+                    <div class="exhibition-content">
+                        <div class="exhibition-date">
+                            {{ exhibition.start_date|date:"Y.m.d" }} - {{ exhibition.end_date|date:"Y.m.d" }}
+                        </div>
+                        
+                        <h2 class="exhibition-title">{{ exhibition.title }}</h2>
+                        {% if exhibition.title_en %}
+                        <div class="exhibition-title-en">{{ exhibition.title_en }}</div>
+                        {% endif %}
+                        
+                        {% if exhibition.description %}
+                        <p class="exhibition-description">
+                            {{ exhibition.description|truncatewords:30 }}
+                        </p>
+                        {% endif %}
+                        
+                        {% if exhibition.artists.exists %}
+                        <div class="exhibition-artists">
+                            <h5>참여 작가</h5>
+                            <div class="artist-list">
+                                {% for artist in exhibition.artists.all %}
+                                <span class="artist-tag">{{ artist.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <a href="{% url 'gallery:exhibition_detail' exhibition.slug %}" class="btn-view-exhibition">
+                            전시 상세보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="no-exhibitions">
+                    <i class="fas fa-images"></i>
+                    <h3>현재 준비 중인 전시가 없습니다</h3>
+                    <p>곧 새로운 전시 소식을 전해드리겠습니다</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

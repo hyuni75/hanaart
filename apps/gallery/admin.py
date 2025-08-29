@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.shortcuts import redirect
+from django.urls import reverse
 from .models import Artist, Exhibition, Artwork, ArtworkImage
 
 class ArtworkImageInline(admin.TabularInline):
@@ -6,8 +8,31 @@ class ArtworkImageInline(admin.TabularInline):
     extra = 1
     fields = ['image', 'caption', 'order']
 
+class ManageProxyMixin:
+    """Django Admin을 Manage 페이지로 프록시하는 Mixin"""
+    
+    def changelist_view(self, request, extra_context=None):
+        """목록 뷰를 manage로 리다이렉트"""
+        model_name = self.model._meta.model_name
+        return redirect(f'gallery:{model_name}_manage_list')
+    
+    def add_view(self, request, form_url='', extra_context=None):
+        """생성 뷰를 manage로 리다이렉트"""
+        model_name = self.model._meta.model_name
+        return redirect(f'gallery:{model_name}_create')
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        """수정 뷰를 manage로 리다이렉트"""
+        model_name = self.model._meta.model_name
+        return redirect(f'gallery:{model_name}_edit', pk=object_id)
+    
+    def delete_view(self, request, object_id, extra_context=None):
+        """삭제 뷰를 manage로 리다이렉트"""
+        model_name = self.model._meta.model_name
+        return redirect(f'gallery:{model_name}_delete', pk=object_id)
+
 @admin.register(Artist)
-class ArtistAdmin(admin.ModelAdmin):
+class ArtistAdmin(ManageProxyMixin, admin.ModelAdmin):
     list_display = ['name', 'name_en', 'is_exclusive', 'is_active', 'display_order']
     list_filter = ['is_exclusive', 'is_active']
     search_fields = ['name', 'name_en', 'bio']
@@ -30,7 +55,7 @@ class ArtistAdmin(admin.ModelAdmin):
     )
 
 @admin.register(Exhibition)
-class ExhibitionAdmin(admin.ModelAdmin):
+class ExhibitionAdmin(ManageProxyMixin, admin.ModelAdmin):
     list_display = ['title', 'exhibition_type', 'start_date', 'end_date', 'is_current', 'is_featured', 'is_published']
     list_filter = ['exhibition_type', 'is_current', 'is_featured', 'is_published']
     search_fields = ['title', 'title_en', 'description']
@@ -62,7 +87,7 @@ class ExhibitionAdmin(admin.ModelAdmin):
     )
 
 @admin.register(Artwork)
-class ArtworkAdmin(admin.ModelAdmin):
+class ArtworkAdmin(ManageProxyMixin, admin.ModelAdmin):
     list_display = ['title', 'artist', 'artwork_type', 'year', 'price', 'is_sold', 'is_featured', 'is_published']
     list_filter = ['artwork_type', 'artist', 'is_sold', 'is_for_sale', 'is_featured', 'is_published']
     search_fields = ['title', 'title_en', 'description', 'artist__name']

@@ -484,7 +484,7 @@ function deleteExhibition(id, title) {
     hanaModal.confirmDelete(title + ' 전시', function() {
         showLoading();
         
-        fetch(`/gallery/admin/exhibitions/${id}/delete/`, {
+        fetch(`/manage/exhibitions/${id}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),

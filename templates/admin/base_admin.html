@@ -562,7 +562,7 @@
                         </div>
                     </div>
                     
-                    <form method="post" action="{% url 'adminpanel:logout' %}" style="margin: 0;">
+                    <form method="post" action="{% url 'gallery:manage_logout' %}" style="margin: 0;">
                         {% csrf_token %}
                         <button type="submit" class="topbar-btn">
                             <i class="fas fa-sign-out-alt"></i>
@@ -597,9 +597,34 @@
     <script src="{% static 'js/toast.js' %}"></script>
     
     <script>
-        // Initialize
-        window.hanaModal = new HanaModal();
-        window.hanaToast = new HanaToast();
+        // Initialize after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bootstrap이 로드되었는지 확인
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap이 로드되지 않았습니다.');
+                return;
+            }
+            
+            // Modal과 Toast 초기화
+            try {
+                window.hanaModal = new HanaModal();
+                window.hanaToast = new HanaToast();
+                console.log('HanaModal과 HanaToast가 초기화되었습니다.');
+            } catch (error) {
+                console.error('Modal/Toast 초기화 오류:', error);
+            }
+            
+            // Restore sidebar state
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (collapsed) {
+                const sidebar = document.getElementById('adminSidebar');
+                const main = document.getElementById('adminMain');
+                const icon = document.getElementById('toggleIcon');
+                if (sidebar) sidebar.classList.add('collapsed');
+                if (main) main.classList.add('expanded');
+                if (icon) icon.className = 'fas fa-chevron-right';
+            }
+        });
         
         // Sidebar Toggle
         function toggleSidebar() {
@@ -626,15 +651,7 @@
             sidebar.classList.toggle('mobile-open');
         }
         
-        // Restore sidebar state
-        document.addEventListener('DOMContentLoaded', function() {
-            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (collapsed) {
-                document.getElementById('adminSidebar').classList.add('collapsed');
-                document.getElementById('adminMain').classList.add('expanded');
-                document.getElementById('toggleIcon').className = 'fas fa-chevron-right';
-            }
-        });
+        // Restore sidebar state (이미 위의 DOMContentLoaded에 병합됨)
         
         // Loading functions
         function showLoading() {

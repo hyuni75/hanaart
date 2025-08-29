@@ -10,11 +10,25 @@ class HanaModal {
     }
 
     init() {
+        // DOM이 완전히 로드된 후 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initModal());
+        } else {
+            this.initModal();
+        }
+    }
+
+    initModal() {
         // 모달 HTML이 없으면 동적으로 생성
         if (!document.getElementById('commonModal')) {
             this.createModalHTML();
         }
-        this.modal = new bootstrap.Modal(document.getElementById('commonModal'));
+        // Bootstrap이 로드되었는지 확인
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            this.modal = new bootstrap.Modal(document.getElementById('commonModal'));
+        } else {
+            console.error('Bootstrap Modal이 로드되지 않았습니다.');
+        }
     }
 
     createModalHTML() {
