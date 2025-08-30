@@ -1,0 +1,71 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}하나아트갤러리 HANA ART GALLERY{% endblock %}
+
+{% block content %}
+<!-- 메인 히어로 섹션 -->
+<section style="padding:60px 0;">
+  <div class="container">
+    <div class="grid grid-2">
+      <div>
+        <h2 style="font-size:36px;margin-bottom:20px;">하나아트갤러리</h2>
+        <p class="lead">
+          동시대 감수성과 한국적 미감을 잇는<br>
+          현대미술 전문 공간
+        </p>
+        <div style="margin-top:30px;">
+          <a href="/exhibition/" class="cta">현재 전시 보기</a>
+        </div>
+      </div>
+      <div>
+        <img class="lbox" src="{% static 'img/ihan_01.jpg' %}" alt="현재 전시 작품">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 퀵 링크 섹션 -->
+<section style="background:#fafafa;">
+  <div class="container">
+    <div class="grid grid-4">
+      <div style="text-align:center;padding:30px 10px;">
+        <h3 style="font-size:18px;">소개·인사말</h3>
+        <p class="note">갤러리 철학과 비전</p>
+        <a href="/about/" style="font-size:14px;text-decoration:underline;">자세히 보기</a>
+      </div>
+      <div style="text-align:center;padding:30px 10px;">
+        <h3 style="font-size:18px;">전속작가</h3>
+        <p class="note">6명의 전속 작가</p>
+        <a href="/artists/" style="font-size:14px;text-decoration:underline;">작가 보기</a>
+      </div>
+      <div style="text-align:center;padding:30px 10px;">
+        <h3 style="font-size:18px;">액자제작</h3>
+        <p class="note">맞춤 액자 제작</p>
+        <a href="/frame/" style="font-size:14px;text-decoration:underline;">서비스 안내</a>
+      </div>
+      <div style="text-align:center;padding:30px 10px;">
+        <h3 style="font-size:18px;">찾아오는 길</h3>
+        <p class="note">인사동 본점</p>
+        <a href="/location/" style="font-size:14px;text-decoration:underline;">위치 확인</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 최근 소식 -->
+<section>
+  <div class="container">
+    <h2>최근 소식</h2>
+    <div class="notice" style="margin-bottom:15px;">
+      <strong>현재전시</strong> | 이한 초대전 "Rhythm of Light" (2025.08.20 – 09.02)
+    </div>
+    <div class="notice" style="margin-bottom:15px;">
+      <strong>아트페어</strong> | 2025 화랑미술제 참가 예정
+    </div>
+    <div class="notice">
+      <strong>공지사항</strong> | 갤러리 운영시간: 월-토 10:00-18:00 (일요일 휴관)
+    </div>
+  </div>
+</section>
+{% endblock %}

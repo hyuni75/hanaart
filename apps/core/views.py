@@ -2,48 +2,44 @@ from django.shortcuts import render, redirect
 
 def index(request):
     """메인 페이지"""
-    from apps.gallery.models import Artist, Exhibition, Artwork
-    from django.urls import reverse
-    
-    # 현재 전시 가져오기
-    current_exhibitions = Exhibition.objects.filter(
-        is_current=True, 
-        is_published=True
-    )
-    
-    # 전시 링크 로직: 1개면 직접 링크, 여러개면 목록 페이지
-    exhibition_link = None
-    if current_exhibitions.count() == 1:
-        exhibition = current_exhibitions.first()
-        exhibition_link = reverse('gallery:exhibition_detail', kwargs={'slug': exhibition.slug})
-    elif current_exhibitions.count() > 1:
-        exhibition_link = reverse('gallery:exhibition_list')
-    
-    # 최신 작품 가져오기 (히어로 섹션 로테이션용)
-    all_artworks = Artwork.objects.filter(
-        is_published=True
-    ).select_related('artist').order_by('-created_at')[:10]
-    
-    # 전속 작가와 일반 작가 분리
-    exclusive_artists = Artist.objects.filter(
-        is_active=True, 
-        is_exclusive=True
-    ).prefetch_related('artworks').order_by('display_order', 'name')
-    
-    regular_artists = Artist.objects.filter(
-        is_active=True, 
-        is_exclusive=False
-    ).prefetch_related('artworks').order_by('display_order', 'name')
-    
-    context = {
-        'current_exhibition': current_exhibitions.first() if current_exhibitions.exists() else None,
-        'exhibition_link': exhibition_link,
-        'all_artworks': all_artworks,
-        'exclusive_artists': exclusive_artists,
-        'regular_artists': regular_artists,
-        'artists': Artist.objects.filter(is_active=True).prefetch_related('artworks').order_by('display_order', 'name')[:6],
-    }
-    return render(request, 'core/index.html', context)
+    # 새로운 하나아트갤러리 메인 페이지 템플릿 렌더링
+    return render(request, 'index_new.html')
+
+def about(request):
+    """소개·인사말 페이지"""
+    return render(request, 'about.html')
+
+def history(request):
+    """연혁 페이지"""
+    return render(request, 'history.html')
+
+def exhibition(request):
+    """현재전시 페이지"""
+    from apps.gallery.models import CurrentExhibition
+    exhibition = CurrentExhibition.objects.filter(is_active=True).first()
+    return render(request, 'exhibition.html', {'exhibition': exhibition})
+
+def artfair(request):
+    """아트페어 페이지"""
+    return render(request, 'artfair.html')
+
+def artists(request):
+    """전속작가 페이지"""
+    from apps.gallery.models import SimpleArtist
+    artists = SimpleArtist.objects.filter(is_active=True).order_by('display_order', 'name')
+    return render(request, 'artists.html', {'artists': artists})
+
+def frame(request):
+    """액자제작 페이지"""
+    return render(request, 'frame.html')
+
+def location(request):
+    """찾아오는 길 페이지"""
+    return render(request, 'location.html')
+
+def contact(request):
+    """연락처 페이지"""
+    return render(request, 'contact.html')
 
 def dashboard(request):
     """관리자 대시보드 (gallery 앱으로 이동)"""

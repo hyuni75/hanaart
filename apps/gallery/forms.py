@@ -1,5 +1,5 @@
 from django import forms
-from .models import Artist, Exhibition, Artwork
+from .models import Artist, Exhibition, Artwork, CurrentExhibition, SimpleArtist
 
 class ArtistForm(forms.ModelForm):
     class Meta:
@@ -97,4 +97,64 @@ class ArtworkForm(forms.ModelForm):
             'is_for_sale': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class CurrentExhibitionForm(forms.ModelForm):
+    """현재 전시 폼"""
+    
+    class Meta:
+        model = CurrentExhibition
+        fields = [
+            'title', 'subtitle', 'artist_name',
+            'start_date', 'end_date', 'venue',
+            'description',
+            'image1', 'image2', 'image3'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'subtitle': forms.TextInput(attrs={'class': 'form-control'}),
+            'artist_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'venue': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        
+        if start_date and end_date:
+            if start_date > end_date:
+                raise forms.ValidationError('종료일은 시작일보다 이후여야 합니다.')
+        
+        return cleaned_data
+
+
+class SimpleArtistForm(forms.ModelForm):
+    """전속작가 간단 폼"""
+    
+    class Meta:
+        model = SimpleArtist
+        fields = [
+            'name', 'bio',
+            'artwork1', 'artwork2', 'artwork3',
+            'display_order', 'is_active'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '작가명을 입력하세요'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': '작가에 대한 소개를 작성하세요'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'name': '작가명',
+            'bio': '작가 소개',
+            'artwork1': '대표 작품 1 (필수)',
+            'artwork2': '대표 작품 2 (선택)',
+            'artwork3': '대표 작품 3 (선택)',
+            'display_order': '표시 순서',
+            'is_active': '페이지에 표시',
         }

@@ -504,6 +504,18 @@
                 <div class="nav-section">
                     <div class="nav-title">갤러리 관리</div>
                     <div class="nav-item">
+                        <a href="{% url 'gallery:manage_current_exhibition' %}" class="nav-link {% if 'current_exhibition' in request.resolver_match.url_name %}active{% endif %}" style="{% if 'current_exhibition' in request.resolver_match.url_name %}background: rgba(229, 28, 35, 0.1); border-left-color: #e51c23;{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-star" style="{% if 'current_exhibition' in request.resolver_match.url_name %}color: #e51c23;{% endif %}"></i></span>
+                            <span class="nav-text">현재전시 관리</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'gallery:manage_simple_artists' %}" class="nav-link {% if 'simple_artist' in request.resolver_match.url_name %}active{% endif %}" style="{% if 'simple_artist' in request.resolver_match.url_name %}background: rgba(0, 123, 255, 0.1); border-left-color: #007bff;{% endif %}">
+                            <span class="nav-icon"><i class="fas fa-palette" style="{% if 'simple_artist' in request.resolver_match.url_name %}color: #007bff;{% endif %}"></i></span>
+                            <span class="nav-text">전속작가 관리</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
                         <a href="{% url 'gallery:artist_manage_list' %}" class="nav-link {% if 'artist' in request.resolver_match.url_name %}active{% endif %}">
                             <span class="nav-icon"><i class="fas fa-user-tie"></i></span>
                             <span class="nav-text">작가 관리</span>
@@ -516,9 +528,9 @@
                         </a>
                     </div>
                     <div class="nav-item">
-                        <a href="{% url 'gallery:exhibition_manage_list' %}" class="nav-link {% if 'exhibition' in request.resolver_match.url_name %}active{% endif %}">
+                        <a href="{% url 'gallery:exhibition_manage_list' %}" class="nav-link {% if 'exhibition_manage' in request.resolver_match.url_name %}active{% endif %}">
                             <span class="nav-icon"><i class="fas fa-images"></i></span>
-                            <span class="nav-text">전시 관리</span>
+                            <span class="nav-text">전시 아카이브</span>
                         </a>
                     </div>
                 </div>

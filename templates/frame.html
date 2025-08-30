@@ -1,0 +1,19 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}액자제작 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<section id="frame">
+  <div class="container">
+    <div class="kicker">Frames</div>
+    <h2>하나액자 · 맞춤 액자 제작</h2>
+    <p class="note">원목/알루미늄/캔버스 스트레칭, 보존/뮤지엄 글레이징, 대형액자 등 전 공정 자체 제작</p>
+    <div class="grid grid-3">
+      <img class="lbox" src="{% static 'img/frame_wall.jpg' %}" alt="">
+      <img class="lbox" src="{% static 'img/frame_sample1.jpg' %}" alt="">
+      <img class="lbox" src="{% static 'img/frame_sample2.jpg' %}" alt="">
+    </div>
+  </div>
+</section>
+{% endblock %}

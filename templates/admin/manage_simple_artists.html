@@ -1,0 +1,189 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}전속작가 관리{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-palette text-primary"></i>
+            전속작가 관리
+        </h1>
+        <div class="page-actions">
+            <a href="{% url 'gallery:create_simple_artist' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 새 작가 등록
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>등록된 작가 목록</h2>
+            <span class="badge bg-secondary">총 {{ artists.count }}명</span>
+        </div>
+
+        {% if artists %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="80">순서</th>
+                            <th width="100">대표이미지</th>
+                            <th>작가명</th>
+                            <th>작가 소개</th>
+                            <th width="100">상태</th>
+                            <th width="150">등록일</th>
+                            <th width="120">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for artist in artists %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-info">{{ artist.display_order }}</span>
+                                </td>
+                                <td>
+                                    {% if artist.artwork1 %}
+                                        <img src="{{ artist.artwork1.url }}" alt="{{ artist.name }}" 
+                                             class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="text-muted">
+                                            <i class="fas fa-image fa-2x"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ artist.name }}</strong>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;" 
+                                         title="{{ artist.bio }}">
+                                        {{ artist.bio|truncatechars:50 }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if artist.is_active %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> 활성
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times-circle"></i> 비활성
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ artist.created_at|date:"Y.m.d" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'gallery:edit_simple_artist' artist.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> 수정
+                                        </a>
+                                        <form method="post" action="{% url 'gallery:delete_simple_artist' artist.pk %}" 
+                                              style="display: inline;"
+                                              onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> 삭제
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-palette fa-4x text-muted mb-3"></i>
+                <h3>등록된 작가가 없습니다</h3>
+                <p class="text-muted">새로운 전속작가를 등록해주세요.</p>
+                <a href="{% url 'gallery:create_simple_artist' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 첫 작가 등록하기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .content-wrapper {
+        padding: 2rem;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .content-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #444;
+        margin: 0;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .alert-container {
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}

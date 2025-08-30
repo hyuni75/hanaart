@@ -1,0 +1,27 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}연락처 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<section id="contact">
+  <div class="container">
+    <div class="kicker">Contact</div>
+    <h2>연락처</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <p><strong>대표</strong> 이방은 (Lee, Bang-Eun)</p>
+        <p class="mono">
+          T. 02-736-7877 &nbsp; F. 02-736-4877<br>
+          M. 010-8681-7277<br>
+          E. hanaag@hanmail.net
+        </p>
+        <p class="mono">2, Insadong 10-gil, Jongno-gu, Seoul, Republic of Korea</p>
+      </div>
+      <div>
+        <img class="thumb lbox" src="{% static 'img/card.jpg' %}" alt="">
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

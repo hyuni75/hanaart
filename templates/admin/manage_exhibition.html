@@ -1,0 +1,89 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}현재전시 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>현재전시 관리</h2>
+    
+    <!-- 현재 활성 전시 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>현재 전시</h4>
+        </div>
+        <div class="card-body">
+            {% if current_exhibition %}
+                <h5>{{ current_exhibition.title }}</h5>
+                {% if current_exhibition.subtitle %}
+                    <p class="text-muted">{{ current_exhibition.subtitle }}</p>
+                {% endif %}
+                <p><strong>작가:</strong> {{ current_exhibition.artist_name }}</p>
+                <p><strong>기간:</strong> {{ current_exhibition.date_range }}</p>
+                <p><strong>장소:</strong> {{ current_exhibition.venue }}</p>
+                
+                <div class="mt-3">
+                    <a href="{% url 'gallery:edit_current_exhibition' %}" class="btn btn-primary">수정</a>
+                    <a href="/exhibition/" target="_blank" class="btn btn-secondary">미리보기</a>
+                </div>
+            {% else %}
+                <p>현재 등록된 전시가 없습니다.</p>
+                <a href="{% url 'gallery:create_current_exhibition' %}" class="btn btn-primary">새 전시 등록</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- 이전 전시 목록 -->
+    <div class="card">
+        <div class="card-header">
+            <h4>이전 전시</h4>
+        </div>
+        <div class="card-body">
+            {% if past_exhibitions %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>전시명</th>
+                            <th>작가</th>
+                            <th>기간</th>
+                            <th>액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exhibition in past_exhibitions %}
+                        <tr>
+                            <td>{{ exhibition.title }}</td>
+                            <td>{{ exhibition.artist_name }}</td>
+                            <td>{{ exhibition.date_range }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="restoreExhibition({{ exhibition.id }})">복원</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>이전 전시 기록이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function restoreExhibition(id) {
+    if (confirm('이 전시를 현재 전시로 설정하시겠습니까?')) {
+        // AJAX로 복원 처리
+        fetch(`/manage/exhibition/restore/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

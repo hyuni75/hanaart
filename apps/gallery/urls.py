@@ -40,4 +40,15 @@ urlpatterns = [
     # Admin Dashboard (Root manage path)
     path('manage/', views.admin_dashboard, name='admin_dashboard'),
     path('manage/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    
+    # 현재 전시 관리
+    path('manage/current-exhibition/', views.manage_current_exhibition, name='manage_current_exhibition'),
+    path('manage/current-exhibition/create/', views.create_current_exhibition, name='create_current_exhibition'),
+    path('manage/current-exhibition/edit/', views.edit_current_exhibition, name='edit_current_exhibition'),
+    
+    # 전속작가 관리 (SimpleArtist)
+    path('manage/simple-artists/', views.manage_simple_artists, name='manage_simple_artists'),
+    path('manage/simple-artists/create/', views.create_simple_artist, name='create_simple_artist'),
+    path('manage/simple-artists/<int:pk>/edit/', views.edit_simple_artist, name='edit_simple_artist'),
+    path('manage/simple-artists/<int:pk>/delete/', views.delete_simple_artist, name='delete_simple_artist'),
 ]

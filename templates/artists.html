@@ -1,0 +1,94 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}전속작가 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<section id="artists">
+  <div class="container">
+    <div class="kicker">Artists</div>
+    <h2>전속작가 (가나다순)</h2>
+
+    {% if artists %}
+      {% for artist in artists %}
+        <article class="artist">
+          <h3>{{ artist.name }}</h3>
+          <p class="note">{{ artist.bio }}</p>
+          <div class="shots">
+            {% if artist.artwork1 %}
+              <img class="lbox" src="{{ artist.artwork1.url }}" alt="{{ artist.name }} 작품 1">
+            {% endif %}
+            {% if artist.artwork2 %}
+              <img class="lbox" src="{{ artist.artwork2.url }}" alt="{{ artist.name }} 작품 2">
+            {% endif %}
+            {% if artist.artwork3 %}
+              <img class="lbox" src="{{ artist.artwork3.url }}" alt="{{ artist.name }} 작품 3">
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    {% else %}
+      <!-- 기본 작가 목록 (데이터베이스에 데이터가 없을 경우) -->
+      <article class="artist">
+        <h3>김정숙</h3>
+        <p class="note">추계예대 서양화과 졸업. 국내외 개인전 24회, 해외/국내 아트페어 및 단체전 300여 회 참여.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/kimjs_01.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/kimjs_02.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/kimjs_03.jpg' %}" alt="">
+        </div>
+      </article>
+
+      <article class="artist">
+        <h3>김점선</h3>
+        <p class="note">자유분방한 선과 색으로 한국적 감수성을 현대적으로 풀어낸 작가. 말·오리 등 상징적 모티프의 회화로 사랑받음.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/kimjeomsun_01.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/kimjeomsun_02.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/kimjeomsun_03.jpg' %}" alt="">
+        </div>
+      </article>
+
+      <article class="artist">
+        <h3>박세연</h3>
+        <p class="note">건국대 금속공예 전공. 2024–25 국내 다수 개인전 및 서울·홍콩·싱가포르 등 아트페어 참가.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/parksy_01.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/parksy_02.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/parksy_03.jpg' %}" alt="">
+        </div>
+      </article>
+
+      <article class="artist">
+        <h3>이한</h3>
+        <p class="note">옻칠의 물성과 반복적 붓질을 결합해 빛·몸·시간이 어우러지는 장(field)을 구축.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/ihan_a.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/ihan_b.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/ihan_c.jpg' %}" alt="">
+        </div>
+      </article>
+
+      <article class="artist">
+        <h3>이호철</h3>
+        <p class="note">1958년 서울 출생. 홍익대 서양화과 및 동대학원. 국내외 전시 150여 회 참여.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/leeho_01.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/leeho_02.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/leeho_03.jpg' %}" alt="">
+        </div>
+      </article>
+
+      <article class="artist">
+        <h3>하금숙</h3>
+        <p class="note">1995–2010 개인전 12회 등. 꽃·잎의 리듬을 투명한 색층으로 구현.</p>
+        <div class="shots">
+          <img class="lbox" src="{% static 'img/hagumsuk_01.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/hagumsuk_02.jpg' %}" alt="">
+          <img class="lbox" src="{% static 'img/hagumsuk_03.jpg' %}" alt="">
+        </div>
+      </article>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

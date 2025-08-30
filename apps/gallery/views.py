@@ -3,10 +3,10 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout
-from .models import Artist, Exhibition, Artwork
-from .forms import ArtistForm, ExhibitionForm, ArtworkForm
+from .models import Artist, Exhibition, Artwork, CurrentExhibition, SimpleArtist
+from .forms import ArtistForm, ExhibitionForm, ArtworkForm, CurrentExhibitionForm, SimpleArtistForm
 
 def artist_list(request):
     """작가 목록"""
@@ -411,3 +411,117 @@ def artwork_delete(request, pk):
         
         messages.error(request, error_msg)
         return redirect('gallery:artwork_manage_list')
+
+
+# 현재 전시 관리 뷰들
+def is_staff(user):
+    return user.is_staff
+
+@login_required
+@user_passes_test(is_staff)
+def manage_current_exhibition(request):
+    """현재전시 관리 메인 페이지"""
+    current_exhibition = CurrentExhibition.objects.filter(is_active=True).first()
+    past_exhibitions = CurrentExhibition.objects.filter(is_active=False).order_by('-created_at')[:10]
+    
+    context = {
+        'current_exhibition': current_exhibition,
+        'past_exhibitions': past_exhibitions,
+    }
+    return render(request, 'admin/manage_exhibition.html', context)
+
+@login_required
+@user_passes_test(is_staff)
+def create_current_exhibition(request):
+    """새 전시 등록"""
+    if request.method == 'POST':
+        form = CurrentExhibitionForm(request.POST, request.FILES)
+        if form.is_valid():
+            # 기존 활성 전시를 비활성화
+            CurrentExhibition.objects.filter(is_active=True).update(is_active=False)
+            
+            # 새 전시 저장
+            exhibition = form.save(commit=False)
+            exhibition.is_active = True
+            exhibition.save()
+            
+            messages.success(request, '새 전시가 등록되었습니다.')
+            return redirect('gallery:manage_current_exhibition')
+    else:
+        form = CurrentExhibitionForm()
+    
+    return render(request, 'admin/exhibition_form.html', {'form': form})
+
+@login_required
+@user_passes_test(is_staff)
+def edit_current_exhibition(request):
+    """현재 전시 수정"""
+    exhibition = get_object_or_404(CurrentExhibition, is_active=True)
+    
+    if request.method == 'POST':
+        form = CurrentExhibitionForm(request.POST, request.FILES, instance=exhibition)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '전시 정보가 수정되었습니다.')
+            return redirect('gallery:manage_current_exhibition')
+    else:
+        form = CurrentExhibitionForm(instance=exhibition)
+    
+    return render(request, 'admin/exhibition_form.html', {'form': form})
+
+
+# 전속작가 간단 관리 뷰들
+@login_required
+@user_passes_test(is_staff)
+def manage_simple_artists(request):
+    """전속작가 관리 메인 페이지"""
+    artists = SimpleArtist.objects.filter(is_active=True).order_by('display_order', 'name')
+    inactive_artists = SimpleArtist.objects.filter(is_active=False).order_by('display_order', 'name')
+    
+    context = {
+        'artists': artists,
+        'inactive_artists': inactive_artists,
+    }
+    return render(request, 'admin/manage_simple_artists.html', context)
+
+@login_required
+@user_passes_test(is_staff)
+def create_simple_artist(request):
+    """새 전속작가 등록"""
+    if request.method == 'POST':
+        form = SimpleArtistForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '새 작가가 등록되었습니다.')
+            return redirect('gallery:manage_simple_artists')
+    else:
+        form = SimpleArtistForm()
+    
+    return render(request, 'admin/simple_artist_form.html', {'form': form, 'is_edit': False})
+
+@login_required
+@user_passes_test(is_staff)
+def edit_simple_artist(request, pk):
+    """전속작가 수정"""
+    artist = get_object_or_404(SimpleArtist, pk=pk)
+    
+    if request.method == 'POST':
+        form = SimpleArtistForm(request.POST, request.FILES, instance=artist)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '작가 정보가 수정되었습니다.')
+            return redirect('gallery:manage_simple_artists')
+    else:
+        form = SimpleArtistForm(instance=artist)
+    
+    return render(request, 'admin/simple_artist_form.html', {'form': form, 'is_edit': True, 'artist': artist})
+
+@login_required
+@user_passes_test(is_staff)
+@require_POST
+def delete_simple_artist(request, pk):
+    """전속작가 삭제"""
+    artist = get_object_or_404(SimpleArtist, pk=pk)
+    artist.delete()
+    messages.success(request, '작가가 삭제되었습니다.')
+    return redirect('gallery:manage_simple_artists')

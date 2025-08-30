@@ -1,806 +1,162 @@
 {% extends 'admin/base_admin.html' %}
 {% load static %}
 
-{% block title %}{{ title }} - 하나아트갤러리 관리자{% endblock %}
-
-{% block header_title %}{{ title }}{% endblock %}
-
-{% block extra_css %}
-<style>
-    .form-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    
-    .form-card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: 8px;
-        padding: 2rem;
-        box-shadow: var(--shadow);
-    }
-    
-    .form-section {
-        margin-bottom: 2rem;
-        padding-bottom: 2rem;
-        border-bottom: 1px solid var(--gray-200);
-    }
-    
-    .form-section:last-child {
-        border-bottom: none;
-    }
-    
-    .section-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-800);
-        margin-bottom: 1rem;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        display: block;
-        color: #495057;
-    }
-    
-    .form-control, .form-select {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--gray-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: var(--transition);
-    }
-    
-    .form-control:focus, .form-select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(229, 28, 35, 0.1);
-    }
-    
-    textarea.form-control {
-        resize: vertical;
-        min-height: 120px;
-    }
-    
-    .form-check {
-        margin-bottom: 1rem;
-    }
-    
-    .form-check-input {
-        width: 1.25rem;
-        height: 1.25rem;
-        margin-top: 0.25rem;
-        margin-right: 0.5rem;
-    }
-    
-    .form-check-label {
-        cursor: pointer;
-        user-select: none;
-    }
-    
-    .image-preview {
-        margin-top: 1rem;
-        max-width: 300px;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid var(--gray-200);
-    }
-    
-    .image-preview img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-    
-    .form-actions {
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--gray-200);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        cursor: pointer;
-    }
-    
-    .btn-primary {
-        background: var(--primary-color);
-        border: none;
-        color: var(--white);
-    }
-    
-    .btn-primary:hover {
-        background: #d01920;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(229, 28, 35, 0.2);
-    }
-    
-    .btn-secondary {
-        background: var(--gray-600);
-        border: none;
-        color: var(--white);
-    }
-    
-    .btn-secondary:hover {
-        background: var(--gray-700);
-    }
-    
-    .error-message {
-        color: #dc3545;
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-    
-    .help-text {
-        color: var(--gray-600);
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-    }
-    
-    select[multiple] {
-        display: none !important;  /* 숨김 - JavaScript로 제어 */
-    }
-    
-    /* Dual List Selector */
-    .dual-list-container {
-        display: flex;
-        gap: 1.5rem;
-        align-items: stretch;
-        margin-top: 0.5rem;
-        width: 100%;
-    }
-    
-    .list-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .list-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem;
-        background: var(--gray-100);
-        border: 1px solid var(--gray-300);
-        border-bottom: none;
-        border-radius: 6px 6px 0 0;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--gray-700);
-    }
-    
-    .search-input {
-        width: 150px;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid var(--gray-300);
-        border-radius: 4px;
-        font-size: 0.75rem;
-    }
-    
-    .list-box {
-        height: 350px;
-        overflow-y: auto;
-        border: 1px solid var(--gray-300);
-        border-radius: 0 0 6px 6px;
-        background: var(--white);
-        padding: 0.5rem;
-    }
-    
-    .list-box.selected {
-        background: #f8fffe;
-    }
-    
-    .list-item {
-        padding: 0.75rem;
-        margin-bottom: 0.25rem;
-        border: 1px solid var(--gray-200);
-        border-radius: 4px;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.875rem;
-    }
-    
-    .list-item:hover {
-        background: var(--gray-50);
-    }
-    
-    .list-item.selected {
-        background: #e3f2fd;
-        color: var(--primary-color);
-    }
-    
-    .list-item.disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-    
-    .badge-exclusive {
-        padding: 0.125rem 0.375rem;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 3px;
-        font-size: 0.625rem;
-        font-weight: 600;
-    }
-    
-    .list-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 0 0.5rem;
-    }
-    
-    .control-btn {
-        width: 36px;
-        height: 36px;
-        border: 1px solid var(--gray-300);
-        background: var(--white);
-        border-radius: 6px;
-        color: var(--gray-600);
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .control-btn:hover {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-    
-    .control-btn:active {
-        transform: scale(0.95);
-    }
-</style>
-{% endblock %}
+{% block title %}{% if form.instance.pk %}전시 수정{% else %}새 전시 등록{% endif %}{% endblock %}
 
 {% block content %}
-<div class="form-container">
+<div class="container mt-4">
+    <h2>{% if form.instance.pk %}전시 수정{% else %}새 전시 등록{% endif %}</h2>
     
-    <form method="post" enctype="multipart/form-data" class="form-card">
+    <form method="post" enctype="multipart/form-data" id="exhibitionForm">
         {% csrf_token %}
         
-        <div class="form-section">
-            <h2 class="section-title">기본 정보</h2>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.title.id_for_label }}">전시명 *</label>
-                        {{ form.title }}
-                        {% if form.title.errors %}
-                            <div class="error-message">{{ form.title.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+        <!-- 기본 정보 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>기본 정보</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">전시명 *</label>
+                    {{ form.title }}
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.title_en.id_for_label }}">영문 전시명</label>
-                        {{ form.title_en }}
-                        {% if form.title_en.errors %}
-                            <div class="error-message">{{ form.title_en.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.slug.id_for_label }}">URL 슬러그 *</label>
-                        {{ form.slug }}
-                        <div class="help-text">URL에 사용될 고유 식별자 (영문, 숫자, 하이픈만 사용)</div>
-                        {% if form.slug.errors %}
-                            <div class="error-message">{{ form.slug.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+                <div class="mb-3">
+                    <label for="{{ form.subtitle.id_for_label }}" class="form-label">부제 (선택)</label>
+                    {{ form.subtitle }}
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.exhibition_type.id_for_label }}">전시 유형 *</label>
-                        {{ form.exhibition_type }}
-                        {% if form.exhibition_type.errors %}
-                            <div class="error-message">{{ form.exhibition_type.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+                <div class="mb-3">
+                    <label for="{{ form.artist_name.id_for_label }}" class="form-label">작가명 *</label>
+                    {{ form.artist_name }}
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ form.description.id_for_label }}">전시 설명</label>
-                {{ form.description }}
-                {% if form.description.errors %}
-                    <div class="error-message">{{ form.description.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ form.poster_image.id_for_label }}">포스터 이미지</label>
-                {{ form.poster_image }}
-                {% if exhibition and exhibition.poster_image %}
-                    <div class="image-preview">
-                        <img src="{{ exhibition.poster_image.url }}" alt="현재 포스터">
-                    </div>
-                {% endif %}
-                <div class="help-text">권장 크기: 1200x800px</div>
-                {% if form.poster_image.errors %}
-                    <div class="error-message">{{ form.poster_image.errors.0 }}</div>
-                {% endif %}
             </div>
         </div>
         
-        <div class="form-section">
-            <h2 class="section-title">전시 일정</h2>
-            
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="{{ form.start_date.id_for_label }}">시작일 *</label>
+        <!-- 전시 기간 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>전시 기간</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.start_date.id_for_label }}" class="form-label">시작일 *</label>
                         {{ form.start_date }}
-                        {% if form.start_date.errors %}
-                            <div class="error-message">{{ form.start_date.errors.0 }}</div>
-                        {% endif %}
                     </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="{{ form.end_date.id_for_label }}">종료일 *</label>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.end_date.id_for_label }}" class="form-label">종료일 *</label>
                         {{ form.end_date }}
-                        {% if form.end_date.errors %}
-                            <div class="error-message">{{ form.end_date.errors.0 }}</div>
-                        {% endif %}
                     </div>
                 </div>
                 
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="{{ form.opening_date.id_for_label }}">오프닝</label>
-                        {{ form.opening_date }}
-                        {% if form.opening_date.errors %}
-                            <div class="error-message">{{ form.opening_date.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+                <div class="mb-3">
+                    <label for="{{ form.venue.id_for_label }}" class="form-label">장소</label>
+                    {{ form.venue }}
                 </div>
             </div>
         </div>
         
-        <div class="form-section">
-            <h2 class="section-title">장소 정보</h2>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.venue.id_for_label }}">전시 장소</label>
-                        {{ form.venue }}
-                        {% if form.venue.errors %}
-                            <div class="error-message">{{ form.venue.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="{{ form.venue_address.id_for_label }}">전시 장소 주소</label>
-                        {{ form.venue_address }}
-                        {% if form.venue_address.errors %}
-                            <div class="error-message">{{ form.venue_address.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+        <!-- 전시 설명 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>전시 설명</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">설명 *</label>
+                    {{ form.description }}
+                    <small class="form-text text-muted">전시에 대한 간단한 소개를 작성해주세요.</small>
                 </div>
             </div>
         </div>
         
-        <div class="form-section">
-            <h2 class="section-title">참여 작가 및 작품</h2>
-            
-            <div class="row">
-                <div class="col-12">
-                    <div class="form-group">
-                        <label>참여 작가 선택</label>
-                        <div class="dual-list-container">
-                            <div class="list-section">
-                                <div class="list-header">
-                                    <span>전체 작가</span>
-                                    <input type="text" class="search-input" id="artistSearch" placeholder="검색...">
-                                </div>
-                                <div class="list-box" id="availableArtists">
-                                    {% for artist in form.fields.artists.queryset %}
-                                    <div class="list-item" data-id="{{ artist.id }}" data-name="{{ artist.name }}">
-                                        <span class="item-name">{{ artist.name }}</span>
-                                        {% if artist.is_exclusive %}<span class="badge-exclusive">전속</span>{% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            
-                            <div class="list-controls">
-                                <button type="button" class="control-btn" onclick="addSelectedArtists()">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                                <button type="button" class="control-btn" onclick="removeSelectedArtists()">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="list-section">
-                                <div class="list-header">
-                                    <span>선택된 작가 (<span id="selectedArtistCount">0</span>)</span>
-                                </div>
-                                <div class="list-box selected" id="selectedArtists">
-                                </div>
-                            </div>
+        <!-- 이미지 업로드 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>전시 이미지</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="image-upload-box">
+                            <label class="form-label">메인 이미지 *</label>
+                            {% if form.instance.image1 %}
+                                <img src="{{ form.instance.image1.url }}" class="img-fluid mb-2" alt="">
+                                <p class="small">현재 이미지</p>
+                            {% endif %}
+                            {{ form.image1 }}
                         </div>
-                        {{ form.artists }}
-                        {% if form.artists.errors %}
-                            <div class="error-message">{{ form.artists.errors.0 }}</div>
-                        {% endif %}
                     </div>
-                </div>
-                
-                <div class="col-12 mt-4">
-                    <div class="form-group">
-                        <label>전시 작품 선택</label>
-                        <div class="dual-list-container">
-                            <div class="list-section">
-                                <div class="list-header">
-                                    <span>전체 작품</span>
-                                    <input type="text" class="search-input" id="artworkSearch" placeholder="검색...">
-                                </div>
-                                <div class="list-box" id="availableArtworks">
-                                    {% for artwork in form.fields.artworks.queryset %}
-                                    <div class="list-item" data-id="{{ artwork.id }}" data-artist-id="{{ artwork.artist.id }}" data-name="{{ artwork.title }}">
-                                        <span class="item-name">{{ artwork.artist.name }} - {{ artwork.title }}</span>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            
-                            <div class="list-controls">
-                                <button type="button" class="control-btn" onclick="addSelectedArtworks()">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                                <button type="button" class="control-btn" onclick="removeSelectedArtworks()">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="list-section">
-                                <div class="list-header">
-                                    <span>선택된 작품 (<span id="selectedArtworkCount">0</span>)</span>
-                                </div>
-                                <div class="list-box selected" id="selectedArtworks">
-                                </div>
-                            </div>
+                    
+                    <div class="col-md-4">
+                        <div class="image-upload-box">
+                            <label class="form-label">이미지 2</label>
+                            {% if form.instance.image2 %}
+                                <img src="{{ form.instance.image2.url }}" class="img-fluid mb-2" alt="">
+                                <p class="small">현재 이미지</p>
+                            {% endif %}
+                            {{ form.image2 }}
                         </div>
-                        {{ form.artworks }}
-                        {% if form.artworks.errors %}
-                            <div class="error-message">{{ form.artworks.errors.0 }}</div>
-                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="image-upload-box">
+                            <label class="form-label">이미지 3</label>
+                            {% if form.instance.image3 %}
+                                <img src="{{ form.instance.image3.url }}" class="img-fluid mb-2" alt="">
+                                <p class="small">현재 이미지</p>
+                            {% endif %}
+                            {{ form.image3 }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="form-section">
-            <h2 class="section-title">게시 옵션</h2>
-            
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-check">
-                        {{ form.is_current }}
-                        <label class="form-check-label" for="{{ form.is_current.id_for_label }}">
-                            현재 전시로 설정
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="form-check">
-                        {{ form.is_featured }}
-                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
-                            주요 전시로 표시
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="form-check">
-                        {{ form.is_published }}
-                        <label class="form-check-label" for="{{ form.is_published.id_for_label }}">
-                            공개 상태
-                        </label>
-                    </div>
-                </div>
-            </div>
+        <!-- 에러 메시지 -->
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <h6>오류가 발생했습니다:</h6>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
         </div>
+        {% endif %}
         
-        <div class="form-section">
-            <h2 class="section-title">SEO 정보</h2>
-            
-            <div class="form-group">
-                <label for="{{ form.meta_description.id_for_label }}">메타 설명</label>
-                {{ form.meta_description }}
-                <div class="help-text">검색 엔진에 표시될 설명 (150자 이내 권장)</div>
-                {% if form.meta_description.errors %}
-                    <div class="error-message">{{ form.meta_description.errors.0 }}</div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="form-actions">
-            <a href="{% url 'gallery:exhibition_manage_list' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> 취소
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> 저장
-            </button>
+        <!-- 액션 버튼 -->
+        <div class="mb-5">
+            <button type="submit" class="btn btn-primary">저장</button>
+            <button type="button" onclick="previewExhibition()" class="btn btn-secondary">미리보기</button>
+            <a href="{% url 'gallery:manage_current_exhibition' %}" class="btn btn-light">취소</a>
         </div>
     </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<style>
+.image-upload-box {
+    border: 2px dashed #ddd;
+    padding: 15px;
+    text-align: center;
+    border-radius: 8px;
+    min-height: 200px;
+}
+
+.image-upload-box img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+</style>
+
 <script>
-// 슬러그 자동 생성
-document.getElementById('{{ form.title.id_for_label }}')?.addEventListener('blur', function(e) {
-    const slugField = document.getElementById('{{ form.slug.id_for_label }}');
-    if (!slugField.value) {
-        const title = e.target.value;
-        const slug = title.toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
-        slugField.value = slug;
-    }
-});
-
-// 이미지 미리보기
-document.getElementById('{{ form.poster_image.id_for_label }}')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            let preview = document.querySelector('.image-preview');
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.className = 'image-preview';
-                e.target.parentElement.appendChild(preview);
-            }
-            preview.innerHTML = `<img src="${e.target.result}" alt="미리보기">`;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Dual List Selector 기능
-let selectedArtistIds = new Set();
-let selectedArtworkIds = new Set();
-
-// 아이템 클릭 시 선택/해제
-function setupItemSelection() {
-    document.querySelectorAll('.list-item').forEach(item => {
-        item.addEventListener('click', function() {
-            this.classList.toggle('selected');
-        });
-    });
+function previewExhibition() {
+    // 폼 데이터를 저장하고 미리보기
+    window.open('/exhibition/', '_blank');
 }
-
-// 작가 추가
-function addSelectedArtists() {
-    const availableBox = document.getElementById('availableArtists');
-    const selectedBox = document.getElementById('selectedArtists');
-    const selectElement = document.getElementById('{{ form.artists.id_for_label }}');
-    
-    availableBox.querySelectorAll('.list-item.selected').forEach(item => {
-        const id = item.dataset.id;
-        selectedArtistIds.add(id);
-        
-        // 선택된 박스로 이동
-        item.classList.remove('selected');
-        selectedBox.appendChild(item);
-        
-        // select 요소 업데이트
-        const option = selectElement.querySelector(`option[value="${id}"]`);
-        if (option) option.selected = true;
-        
-        // 작품 목록 필터링
-        filterArtworksByArtists();
-    });
-    
-    updateSelectedCount('artist');
-}
-
-// 작가 제거
-function removeSelectedArtists() {
-    const availableBox = document.getElementById('availableArtists');
-    const selectedBox = document.getElementById('selectedArtists');
-    const selectElement = document.getElementById('{{ form.artists.id_for_label }}');
-    
-    selectedBox.querySelectorAll('.list-item.selected').forEach(item => {
-        const id = item.dataset.id;
-        selectedArtistIds.delete(id);
-        
-        // 원래 박스로 이동
-        item.classList.remove('selected');
-        availableBox.appendChild(item);
-        
-        // select 요소 업데이트
-        const option = selectElement.querySelector(`option[value="${id}"]`);
-        if (option) option.selected = false;
-        
-        // 작품 목록 필터링
-        filterArtworksByArtists();
-    });
-    
-    updateSelectedCount('artist');
-}
-
-// 작품 추가
-function addSelectedArtworks() {
-    const availableBox = document.getElementById('availableArtworks');
-    const selectedBox = document.getElementById('selectedArtworks');
-    const selectElement = document.getElementById('{{ form.artworks.id_for_label }}');
-    
-    availableBox.querySelectorAll('.list-item.selected:not(.disabled)').forEach(item => {
-        const id = item.dataset.id;
-        selectedArtworkIds.add(id);
-        
-        // 선택된 박스로 이동
-        item.classList.remove('selected');
-        selectedBox.appendChild(item);
-        
-        // select 요소 업데이트
-        const option = selectElement.querySelector(`option[value="${id}"]`);
-        if (option) option.selected = true;
-    });
-    
-    updateSelectedCount('artwork');
-}
-
-// 작품 제거
-function removeSelectedArtworks() {
-    const availableBox = document.getElementById('availableArtworks');
-    const selectedBox = document.getElementById('selectedArtworks');
-    const selectElement = document.getElementById('{{ form.artworks.id_for_label }}');
-    
-    selectedBox.querySelectorAll('.list-item.selected').forEach(item => {
-        const id = item.dataset.id;
-        selectedArtworkIds.delete(id);
-        
-        // 원래 박스로 이동 (작가별 필터링 유지)
-        item.classList.remove('selected');
-        availableBox.appendChild(item);
-        
-        // select 요소 업데이트
-        const option = selectElement.querySelector(`option[value="${id}"]`);
-        if (option) option.selected = false;
-        
-        // 필터링 재적용
-        filterArtworksByArtists();
-    });
-    
-    updateSelectedCount('artwork');
-}
-
-// 작가 선택에 따른 작품 필터링
-function filterArtworksByArtists() {
-    const availableArtworks = document.getElementById('availableArtworks');
-    const allItems = availableArtworks.querySelectorAll('.list-item');
-    
-    if (selectedArtistIds.size > 0) {
-        allItems.forEach(item => {
-            const artistId = item.dataset.artistId;
-            if (selectedArtistIds.has(artistId)) {
-                item.classList.remove('disabled');
-            } else {
-                item.classList.add('disabled');
-            }
-        });
-    } else {
-        // 작가가 선택되지 않으면 모든 작품 활성화
-        allItems.forEach(item => {
-            item.classList.remove('disabled');
-        });
-    }
-}
-
-// 선택된 개수 업데이트
-function updateSelectedCount(type) {
-    if (type === 'artist') {
-        document.getElementById('selectedArtistCount').textContent = selectedArtistIds.size;
-    } else {
-        document.getElementById('selectedArtworkCount').textContent = selectedArtworkIds.size;
-    }
-}
-
-// 검색 기능
-function setupSearch() {
-    // 작가 검색
-    document.getElementById('artistSearch')?.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        document.getElementById('availableArtists').querySelectorAll('.list-item').forEach(item => {
-            const name = item.dataset.name.toLowerCase();
-            item.style.display = name.includes(searchTerm) ? '' : 'none';
-        });
-    });
-    
-    // 작품 검색
-    document.getElementById('artworkSearch')?.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        document.getElementById('availableArtworks').querySelectorAll('.list-item').forEach(item => {
-            const name = item.dataset.name.toLowerCase();
-            item.style.display = name.includes(searchTerm) ? '' : 'none';
-        });
-    });
-}
-
-// 초기화 - 기존 선택 항목 복원
-function initializeDualLists() {
-    const artistSelect = document.getElementById('{{ form.artists.id_for_label }}');
-    const artworkSelect = document.getElementById('{{ form.artworks.id_for_label }}');
-    
-    // 기존에 선택된 작가들 복원
-    if (artistSelect) {
-        Array.from(artistSelect.selectedOptions).forEach(option => {
-            const id = option.value;
-            selectedArtistIds.add(id);
-            
-            const item = document.querySelector(`#availableArtists .list-item[data-id="${id}"]`);
-            if (item) {
-                document.getElementById('selectedArtists').appendChild(item);
-            }
-        });
-    }
-    
-    // 기존에 선택된 작품들 복원
-    if (artworkSelect) {
-        Array.from(artworkSelect.selectedOptions).forEach(option => {
-            const id = option.value;
-            selectedArtworkIds.add(id);
-            
-            const item = document.querySelector(`#availableArtworks .list-item[data-id="${id}"]`);
-            if (item) {
-                document.getElementById('selectedArtworks').appendChild(item);
-            }
-        });
-    }
-    
-    updateSelectedCount('artist');
-    updateSelectedCount('artwork');
-    filterArtworksByArtists();
-}
-
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    setupItemSelection();
-    setupSearch();
-    initializeDualLists();
-});
 </script>
 {% endblock %}

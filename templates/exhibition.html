@@ -1,0 +1,45 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}현재전시 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<section id="now">
+  <div class="container">
+    <div class="kicker">Now</div>
+    <h2>현재전시</h2>
+    
+    {% if exhibition %}
+    <div class="grid grid-2">
+      <div>
+        <div class="badge">{{ exhibition.title }}</div>
+        {% if exhibition.subtitle %}
+        <div class="badge">{{ exhibition.subtitle }}</div>
+        {% endif %}
+        <p class="label">{{ exhibition.date_range }} · {{ exhibition.venue }}</p>
+        <hr class="hr">
+        <p>{{ exhibition.description|linebreaks }}</p>
+      </div>
+      <div>
+        <div class="grid grid-3">
+          {% if exhibition.image1 %}
+          <img class="lbox" src="{{ exhibition.image1.url }}" alt="">
+          {% endif %}
+          {% if exhibition.image2 %}
+          <img class="lbox" src="{{ exhibition.image2.url }}" alt="">
+          {% endif %}
+          {% if exhibition.image3 %}
+          <img class="lbox" src="{{ exhibition.image3.url }}" alt="">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="notice" style="text-align: center; padding: 60px 20px;">
+      <p style="font-size: 18px; margin-bottom: 10px;">현재 준비 중인 전시가 없습니다.</p>
+      <p style="color: #666;">다음 전시를 기대해주세요.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

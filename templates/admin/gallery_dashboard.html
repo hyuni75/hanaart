@@ -400,6 +400,10 @@
 <div class="quick-actions">
     <h3 class="quick-actions-title">빠른 작업</h3>
     <div class="actions-grid">
+        <a href="{% url 'gallery:manage_current_exhibition' %}" class="action-btn" style="border-color: #e51c23;">
+            <i class="fas fa-star" style="color: #e51c23;"></i>
+            <span>현재전시 관리</span>
+        </a>
         <a href="{% url 'gallery:artist_create' %}" class="action-btn">
             <i class="fas fa-user-plus"></i>
             <span>작가 등록</span>

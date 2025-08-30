@@ -1,0 +1,284 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}작가 정보 수정{% else %}새 작가 등록{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-palette text-primary"></i>
+            {% if form.instance.pk %}작가 정보 수정{% else %}새 작가 등록{% endif %}
+        </h1>
+        <div class="page-actions">
+            <a href="{% url 'gallery:manage_simple_artists' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 목록으로
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="content-section">
+        <form method="post" enctype="multipart/form-data" class="artist-form">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3 class="section-title">기본 정보</h3>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                작가명 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <label for="{{ form.display_order.id_for_label }}" class="form-label">
+                                표시 순서
+                            </label>
+                            {{ form.display_order }}
+                            <small class="form-text text-muted">낮은 숫자가 먼저 표시됩니다</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <label class="form-label">페이지 표시</label>
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    활성화
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.bio.id_for_label }}" class="form-label">
+                        작가 소개 <span class="text-danger">*</span>
+                    </label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.bio.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">작가에 대한 간단한 소개를 작성해주세요</small>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="section-title">대표 작품 이미지</h3>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="{{ form.artwork1.id_for_label }}" class="form-label">
+                                작품 이미지 1 <span class="text-danger">*</span>
+                            </label>
+                            {% if form.instance.artwork1 %}
+                                <div class="current-image mb-2">
+                                    <img src="{{ form.instance.artwork1.url }}" 
+                                         alt="현재 이미지" class="img-fluid rounded">
+                                    <small class="text-muted d-block mt-1">현재 이미지</small>
+                                </div>
+                            {% endif %}
+                            {{ form.artwork1 }}
+                            {% if form.artwork1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.artwork1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="{{ form.artwork2.id_for_label }}" class="form-label">
+                                작품 이미지 2 <span class="text-muted">(선택)</span>
+                            </label>
+                            {% if form.instance.artwork2 %}
+                                <div class="current-image mb-2">
+                                    <img src="{{ form.instance.artwork2.url }}" 
+                                         alt="현재 이미지" class="img-fluid rounded">
+                                    <small class="text-muted d-block mt-1">현재 이미지</small>
+                                </div>
+                            {% endif %}
+                            {{ form.artwork2 }}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="{{ form.artwork3.id_for_label }}" class="form-label">
+                                작품 이미지 3 <span class="text-muted">(선택)</span>
+                            </label>
+                            {% if form.instance.artwork3 %}
+                                <div class="current-image mb-2">
+                                    <img src="{{ form.instance.artwork3.url }}" 
+                                         alt="현재 이미지" class="img-fluid rounded">
+                                    <small class="text-muted d-block mt-1">현재 이미지</small>
+                                </div>
+                            {% endif %}
+                            {{ form.artwork3 }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    권장 이미지 크기: 600x600px 이상, JPG 또는 PNG 형식
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% if form.instance.pk %}수정 완료{% else %}등록 완료{% endif %}
+                </button>
+                <a href="{% url 'gallery:manage_simple_artists' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> 취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .content-wrapper {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .content-section {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0066cc;
+        box-shadow: 0 0 0 0.2rem rgba(0,102,204,0.25);
+    }
+    
+    .current-image {
+        max-width: 200px;
+        border: 1px solid #dee2e6;
+        padding: 4px;
+        border-radius: 4px;
+        background: #f8f9fa;
+    }
+    
+    .current-image img {
+        width: 100%;
+        height: auto;
+    }
+    
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .alert-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<script>
+    // 이미지 미리보기 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInputs = document.querySelectorAll('input[type="file"]');
+        
+        imageInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 미리보기 업데이트 로직
+                        console.log('Image selected:', file.name);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

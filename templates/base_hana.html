@@ -1,0 +1,123 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}하나아트갤러리 HANA ART GALLERY{% endblock %}</title>
+<meta name="description" content="{% block description %}현대미술 갤러리 · 전속작가 전시 · 액자 제작 · 인사동 하나아트갤러리{% endblock %}" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff; --ink:#222; --muted:#8b8b8b; --line:#ededed; --accent:#e51c23;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Arial,Apple SD Gothic Neo,"Malgun Gothic",sans-serif;line-height:1.6}
+img{display:block;width:100%;height:auto;border:0}
+a{color:inherit;text-decoration:none}
+.container{width:min(1100px,100%);margin:auto;padding:0 18px}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px;padding:14px 0}
+.brand img{width:44px;height:auto}
+.brand h1{font-size:18px;letter-spacing:.15em;font-weight:700;margin:0}
+nav{display:flex;gap:14px;overflow:auto;padding:0 0 12px}
+nav a{padding:8px 12px;border:1px solid var(--line);border-radius:999px;font-size:14px;white-space:nowrap}
+nav a:hover{border-color:#bbb}
+nav a.active{background:var(--ink);color:var(--bg)}
+.kicker{font-size:12px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px}
+h2{font-size:28px;margin:6px 0 16px}
+h3{font-size:22px;margin:0 0 12px}
+section{padding:44px 0;border-bottom:1px solid var(--line)}
+.grid{display:grid;gap:18px}
+.grid-2{grid-template-columns:1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.lead{font-size:18px;color:#444}
+.badge{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;margin-right:8px}
+.tag{color:var(--accent);font-weight:700}
+.label{font-size:13px;color:#666}
+.note{font-size:13px;color:#666}
+hr.hr{border:none;border-top:1px dashed var(--line);margin:20px 0}
+.artist{padding:20px 0;border-top:1px solid var(--line)}
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.shots img{aspect-ratio:1/1;object-fit:cover;border-radius:6px}
+.thumb{border-radius:8px}
+.cta{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--ink);border-radius:999px}
+footer{padding:40px 0 80px}
+footer .card{border:1px solid var(--line);border-radius:12px;padding:18px}
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;font-size:13px}
+.mapbtn{margin-top:12px}
+.notice{background:#fafafa;border:1px solid var(--line);padding:10px;border-radius:8px;font-size:13px}
+
+/* 라이트박스 */
+.lbox{cursor:zoom-in}
+#lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);z-index:90}
+#lightbox img{max-width:min(1200px,92vw);max-height:88vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#lightbox.show{display:flex}
+#lightbox:after{content:"닫기";position:absolute;top:10px;right:14px;color:#fff;font-size:12px;opacity:.8}
+
+/* 반응형 */
+@media(min-width:760px){
+  .grid-2{grid-template-columns:1.2fr .8fr}
+  .hero{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:18px}
+  .brand h1{font-size:20px}
+}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="brand hero">
+      <img src="{% static 'img/ci_hana.png' %}" alt="HANA ART GALLERY 로고">
+      <h1>HANA ART GALLERY</h1>
+    </div>
+    <nav>
+      <a href="/" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>홈</a>
+      <a href="/about/" {% if request.resolver_match.url_name == 'about' %}class="active"{% endif %}>소개·인사말</a>
+      <a href="/history/" {% if request.resolver_match.url_name == 'history' %}class="active"{% endif %}>연혁</a>
+      <a href="/exhibition/" {% if request.resolver_match.url_name == 'exhibition' %}class="active"{% endif %}>현재전시</a>
+      <a href="/artfair/" {% if request.resolver_match.url_name == 'artfair' %}class="active"{% endif %}>아트페어</a>
+      <a href="/artists/" {% if request.resolver_match.url_name == 'artists' %}class="active"{% endif %}>전속작가</a>
+      <a href="/frame/" {% if request.resolver_match.url_name == 'frame' %}class="active"{% endif %}>액자제작</a>
+      <a href="/location/" {% if request.resolver_match.url_name == 'location' %}class="active"{% endif %}>찾아오는 길</a>
+      <a href="/contact/" {% if request.resolver_match.url_name == 'contact' %}class="active"{% endif %}>연락처</a>
+    </nav>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="container">
+    <img src="{% static 'img/ci_hana.png' %}" alt="" style="width:44px;opacity:.8">
+    <div class="note" style="margin-top:8px">
+      © HANA ART GALLERY. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- 라이트박스 스크립트 (외부 라이브러리 없음) -->
+<div id="lightbox" role="dialog" aria-label="이미지 확대 보기"><img alt=""></div>
+<script>
+const lb = document.getElementById('lightbox');
+const lbImg = lb.querySelector('img');
+document.addEventListener('click', e=>{
+  const t = e.target;
+  if(t.classList.contains('lbox')){
+    lbImg.src = t.src;
+    lb.classList.add('show');
+  }
+});
+window.addEventListener('keydown', e=>{
+  if(e.key==='Escape') lb.classList.remove('show');
+});
+lb.addEventListener('click', ()=> lb.classList.remove('show'));
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

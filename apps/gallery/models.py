@@ -2,6 +2,7 @@ from django.db import models
 from apps.core.models import TimeStampedModel
 from .utils import ImageOptimizer
 import os
+from datetime import date
 
 class Artist(TimeStampedModel):
     """작가 모델"""
@@ -183,3 +184,66 @@ class ArtworkImage(TimeStampedModel):
     
     def __str__(self):
         return f'{self.artwork.title} - Image {self.order}'
+
+
+class CurrentExhibition(TimeStampedModel):
+    """현재 전시 정보 모델"""
+    
+    # 기본 정보
+    title = models.CharField('전시명', max_length=200)
+    subtitle = models.CharField('부제', max_length=200, blank=True)
+    artist_name = models.CharField('작가명', max_length=100)
+    
+    # 전시 기간
+    start_date = models.DateField('시작일')
+    end_date = models.DateField('종료일')
+    venue = models.CharField('장소', max_length=200, default='하나아트갤러리')
+    
+    # 전시 설명
+    description = models.TextField('전시 설명')
+    
+    # 이미지 (최대 3개)
+    image1 = models.ImageField('메인 이미지', upload_to='exhibitions/current/')
+    image2 = models.ImageField('이미지 2', upload_to='exhibitions/current/', blank=True, null=True)
+    image3 = models.ImageField('이미지 3', upload_to='exhibitions/current/', blank=True, null=True)
+    
+    # 상태 관리
+    is_active = models.BooleanField('활성화', default=True)
+    
+    class Meta:
+        verbose_name = '현재 전시'
+        verbose_name_plural = '현재 전시'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} - {self.artist_name}"
+    
+    @property
+    def date_range(self):
+        """전시 기간 포맷팅"""
+        return f"{self.start_date.strftime('%Y.%m.%d')} – {self.end_date.strftime('%m.%d')}"
+
+
+class SimpleArtist(TimeStampedModel):
+    """전속작가 페이지용 간단한 작가 모델"""
+    
+    # 기본 정보
+    name = models.CharField('작가명', max_length=100)
+    bio = models.TextField('작가 소개', help_text='작가에 대한 간단한 소개')
+    
+    # 작품 이미지 (최대 3개)
+    artwork1 = models.ImageField('작품 이미지 1', upload_to='artists/simple/')
+    artwork2 = models.ImageField('작품 이미지 2', upload_to='artists/simple/', blank=True, null=True)
+    artwork3 = models.ImageField('작품 이미지 3', upload_to='artists/simple/', blank=True, null=True)
+    
+    # 순서 및 상태
+    display_order = models.IntegerField('표시 순서', default=0, help_text='낮은 숫자가 먼저 표시됩니다')
+    is_active = models.BooleanField('활성화', default=True)
+    
+    class Meta:
+        verbose_name = '전속작가 (간단)'
+        verbose_name_plural = '전속작가 목록 (간단)'
+        ordering = ['display_order', 'name']
+    
+    def __str__(self):
+        return self.name

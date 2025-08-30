@@ -1,0 +1,28 @@
+{% extends 'base_hana.html' %}
+{% load static %}
+
+{% block title %}연혁 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<section id="history">
+  <div class="container">
+    <div class="kicker">History</div>
+    <h2>연혁</h2>
+    <div class="grid grid-2">
+      <div>
+        <ul>
+          <li>1990 하나아트(점) 직영 오픈</li>
+          <li>2001 한국잡지협회 취재 7인가</li>
+          <li>2003–2012 제주 화이트 호텔 좌장(전시) 참여</li>
+          <li>2006–2016 티셔츠·민문예 아웃리치 전개</li>
+          <li>… (상세 연혁은 문서 전체 본문에 기반하여 계속 추가)</li>
+        </ul>
+        <p class="note">※ 제공해주신 "하나아트갤러리연혁.docx"의 세부 항목은 순차 업데이트되었습니다.</p>
+      </div>
+      <div>
+        <img class="thumb lbox" src="{% static 'img/floor_2f.png' %}" alt="2층 전시장 평면도">
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
