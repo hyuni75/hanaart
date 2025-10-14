@@ -1,0 +1,266 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}홈 디자인 관리{% endblock %}
+
+{% block extra_css %}
+<style>
+    .design-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .design-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .design-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        transform: translateY(-5px);
+    }
+
+    .design-card.active {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, #f5f9ff, #fff);
+        box-shadow: 0 8px 20px rgba(74, 144, 226, 0.25);
+    }
+
+    .design-card.active::before {
+        content: '✓ 현재 활성화';
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--primary-color);
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .design-preview {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .design-preview.grid {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .design-preview.cube {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .design-preview.cinema {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .design-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .design-desc {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .current-design-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .current-design-info h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .current-design-info p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0;
+    }
+
+    .btn-preview {
+        margin-top: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    .btn-preview:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: #fff;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">홈 디자인 관리</h1>
+    <p class="page-subtitle">수억원급 프리미엄 홈 디자인 3종 중 선택</p>
+</div>
+
+<!-- 현재 디자인 정보 -->
+<div class="current-design-info">
+    <h3>현재 활성화된 디자인</h3>
+    <p id="currentDesignName">로딩 중...</p>
+    <p style="font-size: 0.9rem; opacity: 0.8;">마지막 변경: <span id="currentDesignDate">-</span> | 변경자: <span id="currentDesignUser">-</span></p>
+    <a href="/" target="_blank" class="btn btn-preview">
+        <i class="fas fa-external-link-alt"></i> 홈 페이지 미리보기
+    </a>
+</div>
+
+<!-- 디자인 선택 카드 -->
+<div class="design-selector" id="designSelector">
+    <!-- JavaScript로 동적 생성 -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let currentDesign = null;
+
+    // 현재 디자인 정보 로드
+    function loadCurrentDesign() {
+        $.ajax({
+            url: '{% url "admin_panel:home_design_current_api" %}',
+            method: 'GET',
+            success: function(response) {
+                currentDesign = response.design_type;
+
+                $('#currentDesignName').text(response.design_name);
+                $('#currentDesignDate').text(response.updated_at);
+                $('#currentDesignUser').text(response.updated_by || '시스템');
+
+                renderDesignCards(response.designs);
+            },
+            error: function(xhr) {
+                showToast('디자인 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    // 디자인 카드 렌더링
+    function renderDesignCards(designs) {
+        const $container = $('#designSelector');
+        $container.empty();
+
+        const previewClasses = {
+            'premium_grid': 'grid',
+            'cube_3d': 'cube',
+            'cinematic': 'cinema'
+        };
+
+        const previewIcons = {
+            'premium_grid': '⬚',
+            'cube_3d': '◉',
+            'cinematic': '▶'
+        };
+
+        designs.forEach(design => {
+            const isActive = design.value === currentDesign;
+            const $card = $(`
+                <div class="design-card ${isActive ? 'active' : ''}" data-design="${design.value}">
+                    <div class="design-preview ${previewClasses[design.value]}">
+                        ${previewIcons[design.value]}
+                    </div>
+                    <div class="design-title">${design.name}</div>
+                    <div class="design-desc">${design.description}</div>
+                </div>
+            `);
+
+            $card.on('click', function() {
+                if ($(this).hasClass('active')) {
+                    showToast('이미 활성화된 디자인입니다.', 'info');
+                    return;
+                }
+
+                const designType = $(this).data('design');
+                const designName = design.name;
+
+                // 공통 모달 사용
+                window.showCustomModal(
+                    '디자인 변경',
+                    `<p>홈 디자인을 <strong>"${designName}"</strong>(으)로 변경하시겠습니까?</p>
+                     <p class="text-muted mt-2">변경 즉시 홈 페이지에 반영됩니다.</p>`,
+                    function($modal) {
+                        closeModal($modal);
+                        switchDesign(designType);
+                    },
+                    function($modal) {
+                        closeModal($modal);
+                    },
+                    {
+                        modalId: 'changeDesignModal',
+                        confirmText: '변경',
+                        cancelText: '취소',
+                        confirmClass: 'btn-primary'
+                    }
+                );
+            });
+
+            $container.append($card);
+        });
+    }
+
+    // 디자인 변경
+    function switchDesign(designType) {
+        showLoading('디자인 변경 중...');
+
+        $.ajax({
+            url: '{% url "admin_panel:home_design_switch_api" %}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                design_type: designType
+            }),
+            success: function(response) {
+                setTimeout(() => {
+                    hideLoading();
+                    showToast(response.message, 'success');
+                    loadCurrentDesign();
+                }, 1000);
+            },
+            error: function(xhr) {
+                hideLoading();
+                const errorMessage = xhr.responseJSON?.message || '디자인 변경에 실패했습니다.';
+                showToast(errorMessage, 'error');
+            }
+        });
+    }
+
+    // 초기 로드
+    loadCurrentDesign();
+});
+</script>
+{% endblock %}

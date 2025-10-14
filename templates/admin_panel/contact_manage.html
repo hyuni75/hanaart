@@ -1,0 +1,300 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}연락처 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-phone"></i> 연락처 관리
+            </h1>
+            <p class="page-subtitle">갤러리 연락처 정보를 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateContactModal()">
+            <i class="fas fa-plus"></i> 연락처 추가
+        </button>
+    </div>
+</div>
+
+<!-- 연락처 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 연락처 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>제목</th>
+                        <th>대표자명</th>
+                        <th>전화번호</th>
+                        <th>이메일</th>
+                        <th>주소</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="contactTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+
+    $(document).ready(function() {
+        loadContacts();
+    });
+
+    function loadContacts() {
+        $.ajax({
+            url: '/admin-panel/api/contact/list/',
+            method: 'GET',
+            success: function(response) {
+                renderContacts(response.contacts);
+            },
+            error: function(xhr) {
+                console.error('연락처 목록 로드 실패:', xhr.responseText);
+                showToast('연락처 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function renderContacts(contacts) {
+        const tbody = $('#contactTableBody');
+        tbody.empty();
+
+        if (contacts.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        등록된 연락처가 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        contacts.forEach(function(contact) {
+            const statusBadge = contact.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            const addressPreview = contact.address.length > 40
+                ? contact.address.substring(0, 40) + '...'
+                : contact.address;
+
+            tbody.append(`
+                <tr>
+                    <td><strong>${contact.title}</strong></td>
+                    <td>${contact.ceo_name}</td>
+                    <td>${contact.phone}</td>
+                    <td>${contact.email}</td>
+                    <td>${addressPreview}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditContactModal(${contact.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteContactModal(${contact.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function getContactFormHTML(contact = null) {
+        return `
+            ${contact ? `<input type="hidden" id="contactId" value="${contact.id}">` : ''}
+            <div class="mb-3">
+                <label for="contactTitle" class="form-label">제목 *</label>
+                <input type="text" class="form-control" id="contactTitle" required value="${contact ? contact.title : '하나아트갤러리 본점(인사동)'}">
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="contactCeoName" class="form-label">대표자명 *</label>
+                        <input type="text" class="form-control" id="contactCeoName" required value="${contact ? contact.ceo_name : ''}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="contactCeoNameEn" class="form-label">대표자 영문명</label>
+                        <input type="text" class="form-control" id="contactCeoNameEn" value="${contact ? contact.ceo_name_en || '' : ''}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactPhone" class="form-label">전화번호 *</label>
+                        <input type="text" class="form-control" id="contactPhone" required placeholder="02-1234-5678" value="${contact ? contact.phone : ''}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactFax" class="form-label">팩스번호</label>
+                        <input type="text" class="form-control" id="contactFax" placeholder="02-1234-5679" value="${contact ? contact.fax || '' : ''}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactMobile" class="form-label">휴대전화</label>
+                        <input type="text" class="form-control" id="contactMobile" placeholder="010-1234-5678" value="${contact ? contact.mobile || '' : ''}">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="contactEmail" class="form-label">이메일 *</label>
+                <input type="email" class="form-control" id="contactEmail" required placeholder="info@hanaart.com" value="${contact ? contact.email : ''}">
+            </div>
+            <div class="mb-3">
+                <label for="contactAddress" class="form-label">주소 *</label>
+                <textarea class="form-control" id="contactAddress" rows="2" required>${contact ? contact.address : ''}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="contactAddressEn" class="form-label">영문 주소</label>
+                <textarea class="form-control" id="contactAddressEn" rows="2">${contact ? contact.address_en || '' : ''}</textarea>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactBusinessNumber" class="form-label">사업자번호</label>
+                        <input type="text" class="form-control" id="contactBusinessNumber" placeholder="123-45-67890" value="${contact ? contact.business_number || '' : ''}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactLat" class="form-label">위도 (지도용)</label>
+                        <input type="text" class="form-control" id="contactLat" placeholder="37.5665" value="${contact ? contact.lat || '' : ''}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="contactLng" class="form-label">경도 (지도용)</label>
+                        <input type="text" class="form-control" id="contactLng" placeholder="126.9780" value="${contact ? contact.lng || '' : ''}">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="contactHours" class="form-label">운영시간</label>
+                <input type="text" class="form-control" id="contactHours" placeholder="화-일 10:00-18:00 (월요일 휴무)" value="${contact ? contact.hours || '' : ''}">
+            </div>
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="contactIsActive" ${!contact || contact.is_active ? 'checked' : ''}>
+                    <label class="form-check-label" for="contactIsActive">활성화</label>
+                </div>
+            </div>
+        `;
+    }
+
+    function openCreateContactModal() {
+        const formHTML = getContactFormHTML();
+        window.showCreateModal('연락처 추가', formHTML, function($modal) {
+            saveContact(false, $modal);
+        }, { modalId: 'contactModal', size: 'modal-xl' });
+    }
+
+    function openEditContactModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/contact/${id}/`,
+            method: 'GET',
+            success: function(contact) {
+                const formHTML = getContactFormHTML(contact);
+                window.showEditModal('연락처 수정', formHTML, function($modal) {
+                    saveContact(true, $modal);
+                }, { modalId: 'contactModal', size: 'modal-xl' });
+            },
+            error: function(xhr) {
+                console.error('연락처 조회 실패:', xhr.responseText);
+                showToast('연락처 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveContact(isEdit, $modal) {
+        const id = $('#contactId').val();
+        const url = isEdit ? `/admin-panel/api/contact/${id}/update/` : '/admin-panel/api/contact/create/';
+
+        const data = {
+            title: $('#contactTitle').val(),
+            ceo_name: $('#contactCeoName').val(),
+            ceo_name_en: $('#contactCeoNameEn').val() || '',
+            phone: $('#contactPhone').val(),
+            fax: $('#contactFax').val() || '',
+            mobile: $('#contactMobile').val() || '',
+            email: $('#contactEmail').val(),
+            address: $('#contactAddress').val(),
+            address_en: $('#contactAddressEn').val() || '',
+            business_number: $('#contactBusinessNumber').val() || '',
+            lat: $('#contactLat').val() || '',
+            lng: $('#contactLng').val() || '',
+            hours: $('#contactHours').val() || '',
+            is_active: $('#contactIsActive').is(':checked') ? 'true' : 'false'
+        };
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: data,
+            success: function(response) {
+                showToast(isEdit ? '연락처 정보가 수정되었습니다.' : '연락처가 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadContacts();
+            },
+            error: function(xhr) {
+                console.error('연락처 저장 실패:', xhr.responseText);
+                showToast('연락처 저장에 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function openDeleteContactModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 연락처를 삭제하시겠습니까?',
+            function($modal) {
+                confirmDelete($modal);
+            },
+            {
+                modalId: 'deleteContactModal',
+                title: '연락처 삭제'
+            }
+        );
+    }
+
+    function confirmDelete($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/contact/${deleteTargetId}/delete/`,
+            method: 'POST',
+            success: function(response) {
+                showToast('연락처가 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadContacts();
+            },
+            error: function(xhr) {
+                console.error('연락처 삭제 실패:', xhr.responseText);
+                showToast('연락처 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

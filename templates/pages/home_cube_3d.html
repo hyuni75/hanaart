@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}하나아트갤러리 - 3D Cube Gallery{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* base.html 요소 강제 숨김 - 충돌 방지 */
+    #mainNavbar,
+    .navbar,
+    .footer,
+    footer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* main 태그 리셋 */
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        overflow: hidden;
+        cursor: none;
+    }
+
+    /* 프리미엄 3D 네비게이션 */
+    .cube-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 2rem 4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        pointer-events: none;
+    }
+
+    .cube-nav * {
+        pointer-events: auto;
+    }
+
+    .cube-brand {
+        font-size: 1.5rem;
+        font-weight: 200;
+        letter-spacing: 4px;
+        color: #fff;
+        text-transform: uppercase;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .cube-menu {
+        display: flex;
+        gap: 3rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .cube-menu a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 300;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .cube-menu a::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: #fff;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cube-menu a:hover {
+        color: #fff;
+    }
+
+    .cube-menu a:hover::after {
+        width: 100%;
+    }
+
+    /* Three.js 캔버스 */
+    #cube-canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    /* 커스텀 커서 - 3D 인터랙션 */
+    .custom-cursor {
+        width: 60px;
+        height: 60px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        mix-blend-mode: difference;
+    }
+
+    .custom-cursor::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .custom-cursor.active {
+        transform: scale(1.5);
+        border-color: #fff;
+    }
+
+    /* UI 오버레이 */
+    .cube-info {
+        position: fixed;
+        bottom: 4rem;
+        left: 4rem;
+        color: #fff;
+        z-index: 100;
+        opacity: 0;
+        animation: fadeInUp 1s ease forwards 1s;
+    }
+
+    .cube-info h1 {
+        font-size: 4rem;
+        font-weight: 200;
+        letter-spacing: -2px;
+        margin: 0 0 1rem 0;
+        line-height: 1;
+    }
+
+    .cube-info p {
+        font-size: 1.2rem;
+        font-weight: 300;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    .cube-controls {
+        position: fixed;
+        bottom: 4rem;
+        right: 4rem;
+        color: #fff;
+        z-index: 100;
+        text-align: right;
+        opacity: 0;
+        animation: fadeInUp 1s ease forwards 1.2s;
+    }
+
+    .cube-controls p {
+        font-size: 0.9rem;
+        font-weight: 300;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 0.5rem 0;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* 로딩 화면 */
+    .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        transition: opacity 0.8s ease;
+    }
+
+    .loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .loading-spinner {
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 300;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: 2rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .cube-nav {
+            padding: 1.5rem 2rem;
+        }
+
+        .cube-brand {
+            font-size: 1.2rem;
+        }
+
+        .cube-menu {
+            display: none;
+        }
+
+        .cube-info {
+            left: 2rem;
+            bottom: 2rem;
+        }
+
+        .cube-info h1 {
+            font-size: 2.5rem;
+        }
+
+        .cube-controls {
+            right: 2rem;
+            bottom: 2rem;
+        }
+    }
+</style>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- 로딩 화면 -->
+<div class="loading-screen" id="loadingScreen">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading Gallery</p>
+</div>
+
+<!-- 커스텀 커서 -->
+<div class="custom-cursor" id="customCursor"></div>
+
+<!-- 네비게이션 -->
+<nav class="cube-nav">
+    <div class="cube-brand">Hanaart Gallery</div>
+    <ul class="cube-menu">
+        <li><a href="{% url 'pages:about' %}">인사말</a></li>
+        <li><a href="{% url 'pages:history' %}">연혁</a></li>
+        <li><a href="{% url 'gallery:exhibition_list' %}">전시</a></li>
+        <li><a href="{% url 'gallery:artist_list' %}">작가</a></li>
+        <li><a href="{% url 'gallery:artfair_list' %}">아트페어</a></li>
+        <li><a href="{% url 'gallery:frame' %}">액자제작</a></li>
+        <li><a href="{% url 'pages:contact' %}">연락처</a></li>
+    </ul>
+</nav>
+
+<!-- Three.js 캔버스 -->
+<canvas id="cube-canvas"></canvas>
+
+<!-- UI 오버레이 -->
+<div class="cube-info">
+    <h1>하나아트갤러리</h1>
+    <p>Experience Art in 3D Space</p>
+</div>
+
+<div class="cube-controls">
+    <p>Drag to Rotate</p>
+    <p>Scroll to Zoom</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Three.js 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // 커스텀 커서
+    const cursor = document.getElementById('customCursor');
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+        const diffX = mouseX - cursorX;
+        const diffY = mouseY - cursorY;
+
+        cursorX += diffX * 0.15;
+        cursorY += diffY * 0.15;
+
+        cursor.style.left = cursorX - 30 + 'px';
+        cursor.style.top = cursorY - 30 + 'px';
+
+        requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.addEventListener('mousedown', () => cursor.classList.add('active'));
+    document.addEventListener('mouseup', () => cursor.classList.remove('active'));
+
+    // Three.js 3D 큐브 갤러리
+    const canvas = document.getElementById('cube-canvas');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x000000, 10, 50);
+
+    // 카메라
+    const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    camera.position.z = 15;
+
+    // 렌더러
+    const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // 조명
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const pointLight1 = new THREE.PointLight(0xffffff, 1);
+    pointLight1.position.set(10, 10, 10);
+    scene.add(pointLight1);
+
+    const pointLight2 = new THREE.PointLight(0x4488ff, 0.5);
+    pointLight2.position.set(-10, -10, -10);
+    scene.add(pointLight2);
+
+    // 작품 텍스처 로딩
+    const textureLoader = new THREE.TextureLoader();
+    const artworkTextures = [];
+
+    {% if featured_artworks %}
+        {% for artwork in featured_artworks|slice:":6" %}
+            artworkTextures.push({
+                texture: textureLoader.load('{{ artwork.image.url }}'),
+                title: '{{ artwork.title|escapejs }}',
+                artist: '{{ artwork.artist.name|escapejs }}'
+            });
+        {% endfor %}
+    {% endif %}
+
+    // 큐브 생성 (여러 개의 큐브를 나선형 배치)
+    const cubes = [];
+    const cubeGroup = new THREE.Group();
+
+    function createCube(texture, position, rotation) {
+        const geometry = new THREE.BoxGeometry(4, 4, 4);
+        const materials = [
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ map: texture, metalness: 0.2, roughness: 0.8 })
+        ];
+
+        const cube = new THREE.Mesh(geometry, materials);
+        cube.position.copy(position);
+        cube.rotation.copy(rotation);
+
+        return cube;
+    }
+
+    // 나선형 배치
+    if (artworkTextures.length > 0) {
+        const radius = 10;
+        const angleStep = (Math.PI * 2) / Math.min(artworkTextures.length, 6);
+
+        artworkTextures.forEach((artData, index) => {
+            const angle = angleStep * index;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = (index - artworkTextures.length / 2) * 1.5;
+
+            const position = new THREE.Vector3(x, y, z);
+            const rotation = new THREE.Euler(
+                Math.random() * 0.3,
+                angle + Math.PI / 2,
+                Math.random() * 0.3
+            );
+
+            const cube = createCube(artData.texture, position, rotation);
+            cubeGroup.add(cube);
+            cubes.push(cube);
+        });
+    }
+
+    scene.add(cubeGroup);
+
+    // 마우스 인터랙션
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let targetRotationY = 0;
+    let targetRotationX = 0;
+    let currentRotationY = 0;
+    let currentRotationX = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+
+            targetRotationY += deltaX * 0.005;
+            targetRotationX += deltaY * 0.005;
+            targetRotationX = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, targetRotationX));
+
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    // 줌 인터랙션
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        camera.position.z += e.deltaY * 0.01;
+        camera.position.z = Math.max(8, Math.min(25, camera.position.z));
+    });
+
+    // 애니메이션 루프
+    let time = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        time += 0.01;
+
+        // 부드러운 회전 보간
+        currentRotationY += (targetRotationY - currentRotationY) * 0.1;
+        currentRotationX += (targetRotationX - currentRotationX) * 0.1;
+
+        cubeGroup.rotation.y = currentRotationY;
+        cubeGroup.rotation.x = currentRotationX;
+
+        // 개별 큐브 애니메이션
+        cubes.forEach((cube, index) => {
+            cube.rotation.x += 0.001;
+            cube.rotation.y += 0.002;
+            cube.position.y += Math.sin(time + index) * 0.002;
+        });
+
+        // 자동 회전 (드래그 중이 아닐 때)
+        if (!isDragging) {
+            targetRotationY += 0.001;
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    // 리사이즈 핸들링
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 로딩 완료 후 시작
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            animate();
+        }, 1500);
+    });
+</script>
+{% endblock %}

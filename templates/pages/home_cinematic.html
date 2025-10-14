@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}하나아트갤러리 - Cinematic Experience{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* base.html 요소 강제 숨김 - 충돌 방지 */
+    #mainNavbar,
+    .navbar,
+    .footer,
+    footer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* main 태그 리셋 */
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        overflow: hidden;
+        font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* 시네마틱 네비게이션 */
+    .cinematic-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 3rem 5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        pointer-events: none;
+    }
+
+    .cinematic-nav * {
+        pointer-events: auto;
+    }
+
+    .cinematic-brand {
+        font-size: 2rem;
+        font-weight: 300;
+        letter-spacing: 8px;
+        color: #fff;
+        text-transform: uppercase;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .cinematic-menu {
+        display: flex;
+        gap: 2.5rem;
+        list-style: none;
+        margin: 0;
+        padding: 1.2rem 2.5rem;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 50px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .cinematic-menu a {
+        color: #000;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+        font-family: 'Montserrat', sans-serif;
+        text-shadow: none;
+    }
+
+    .cinematic-menu a::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -20px;
+        width: 0;
+        height: 1px;
+        background: #000;
+        transition: width 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .cinematic-menu a:hover::before {
+        width: 10px;
+    }
+
+    /* 풀스크린 슬라이더 */
+    .cinematic-slider {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        will-change: transform, opacity;
+    }
+
+    .slide.active {
+        opacity: 1;
+        z-index: 2;
+    }
+
+    .slide.prev {
+        z-index: 1;
+    }
+
+    .slide-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        transform: scale(1);
+        transition: transform 8s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .slide.active .slide-bg {
+        transform: scale(1.1);
+    }
+
+    .slide-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.7) 0%,
+            rgba(0, 0, 0, 0.3) 50%,
+            rgba(0, 0, 0, 0.8) 100%
+        );
+    }
+
+    /* 시네마틱 텍스트 애니메이션 */
+    .slide-content {
+        position: absolute;
+        bottom: 15%;
+        left: 5rem;
+        max-width: 50%;
+        color: #fff;
+        z-index: 10;
+    }
+
+    .slide-content h2 {
+        font-size: 5rem;
+        font-weight: 300;
+        letter-spacing: -2px;
+        margin: 0 0 1.5rem 0;
+        line-height: 0.95;
+        opacity: 0;
+        transform: translateY(100px);
+        transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .slide.active .slide-content h2 {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.3s;
+    }
+
+    .slide-content .artist {
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        opacity: 0;
+        transform: translateY(50px);
+        transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .slide.active .slide-content .artist {
+        opacity: 0.8;
+        transform: translateY(0);
+        transition-delay: 0.5s;
+    }
+
+    .slide-content .year {
+        font-size: 1.2rem;
+        font-weight: 300;
+        letter-spacing: 3px;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .slide.active .slide-content .year {
+        opacity: 0.6;
+        transform: translateY(0);
+        transition-delay: 0.7s;
+    }
+
+    /* 네비게이션 컨트롤 */
+    .slider-controls {
+        position: fixed;
+        bottom: 5rem;
+        right: 5rem;
+        z-index: 100;
+        display: flex;
+        gap: 2rem;
+    }
+
+    .slider-btn {
+        width: 60px;
+        height: 60px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        color: #fff;
+        font-size: 1.5rem;
+    }
+
+    .slider-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #fff;
+        transform: scale(1.1);
+    }
+
+    /* 진행률 인디케이터 */
+    .progress-indicator {
+        position: fixed;
+        bottom: 3rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 1rem;
+        z-index: 100;
+    }
+
+    .progress-dot {
+        width: 12px;
+        height: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+    }
+
+    .progress-dot::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .progress-dot.active::after {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .progress-dot:hover {
+        border-color: #fff;
+        transform: scale(1.3);
+    }
+
+    /* 슬라이드 카운터 */
+    .slide-counter {
+        position: fixed;
+        top: 50%;
+        right: 5rem;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 1.2rem;
+        font-weight: 300;
+        letter-spacing: 3px;
+        z-index: 100;
+        writing-mode: vertical-rl;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    /* 로딩 애니메이션 */
+    .loading-cinematic {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        transition: opacity 1s ease;
+    }
+
+    .loading-cinematic.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .loading-line {
+        width: 200px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .loading-line::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        animation: loadingSlide 2s ease infinite;
+    }
+
+    @keyframes loadingSlide {
+        to { left: 100%; }
+    }
+
+    .loading-title {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        margin-top: 3rem;
+        font-family: 'Playfair Display', serif;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .cinematic-nav {
+            padding: 2rem;
+        }
+
+        .cinematic-brand {
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+        }
+
+        .cinematic-menu {
+            display: none;
+        }
+
+        .slide-content {
+            left: 2rem;
+            bottom: 10%;
+            max-width: 80%;
+        }
+
+        .slide-content h2 {
+            font-size: 3rem;
+        }
+
+        .slide-content .artist {
+            font-size: 1.2rem;
+        }
+
+        .slider-controls {
+            bottom: 2rem;
+            right: 2rem;
+        }
+
+        .slide-counter {
+            right: 2rem;
+        }
+    }
+</style>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- 로딩 화면 -->
+<div class="loading-cinematic" id="loadingCinematic">
+    <div class="loading-line"></div>
+    <p class="loading-title">Hanaart Gallery</p>
+</div>
+
+<!-- 네비게이션 -->
+<nav class="cinematic-nav">
+    <div class="cinematic-brand">Hanaart</div>
+    <ul class="cinematic-menu">
+        <li><a href="{% url 'pages:about' %}">인사말</a></li>
+        <li><a href="{% url 'pages:history' %}">연혁</a></li>
+        <li><a href="{% url 'gallery:exhibition_list' %}">전시</a></li>
+        <li><a href="{% url 'gallery:artist_list' %}">작가</a></li>
+        <li><a href="{% url 'gallery:artfair_list' %}">아트페어</a></li>
+        <li><a href="{% url 'gallery:frame' %}">액자제작</a></li>
+        <li><a href="{% url 'pages:contact' %}">연락처</a></li>
+    </ul>
+</nav>
+
+<!-- 슬라이더 -->
+<div class="cinematic-slider" id="cinematicSlider">
+    {% if featured_artworks %}
+        {% for artwork in featured_artworks %}
+        <div class="slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+            <div class="slide-bg" style="background-image: url('{{ artwork.image.url }}');"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-content">
+                <div class="artist">{{ artwork.artist.name }}</div>
+                <h2>{{ artwork.title }}</h2>
+                {% if artwork.year %}
+                <div class="year">{{ artwork.year }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="slide active">
+            <div class="slide-bg" style="background: linear-gradient(135deg, #1a1a1a, #000);"></div>
+            <div class="slide-overlay"></div>
+            <div class="slide-content">
+                <div class="artist">Hanaart Gallery</div>
+                <h2>Art Experience</h2>
+                <div class="year">Since 1990</div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- 컨트롤 -->
+<div class="slider-controls">
+    <div class="slider-btn" id="prevBtn">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    <div class="slider-btn" id="nextBtn">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</div>
+
+<!-- 진행률 인디케이터 -->
+<div class="progress-indicator" id="progressIndicator">
+    {% if featured_artworks %}
+        {% for artwork in featured_artworks %}
+        <div class="progress-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- 슬라이드 카운터 -->
+<div class="slide-counter" id="slideCounter">01 / {{ featured_artworks|length|default:"01" }}</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.progress-dot');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const counter = document.getElementById('slideCounter');
+
+        let currentIndex = 0;
+        let isTransitioning = false;
+        let autoplayInterval;
+
+        // 슬라이드 전환 함수
+        function goToSlide(index) {
+            if (isTransitioning || index === currentIndex) return;
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+
+            isTransitioning = true;
+
+            // 이전 슬라이드
+            slides[currentIndex].classList.remove('active');
+            slides[currentIndex].classList.add('prev');
+            dots[currentIndex].classList.remove('active');
+
+            // 새 슬라이드
+            setTimeout(() => {
+                slides[currentIndex].classList.remove('prev');
+                slides[index].classList.add('active');
+                dots[index].classList.add('active');
+
+                currentIndex = index;
+                updateCounter();
+
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 1500);
+            }, 50);
+        }
+
+        // 카운터 업데이트
+        function updateCounter() {
+            const current = String(currentIndex + 1).padStart(2, '0');
+            const total = String(slides.length).padStart(2, '0');
+            counter.textContent = `${current} / ${total}`;
+        }
+
+        // 이벤트 리스너
+        prevBtn.addEventListener('click', () => {
+            goToSlide(currentIndex - 1);
+            resetAutoplay();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            goToSlide(currentIndex + 1);
+            resetAutoplay();
+        });
+
+        dots.forEach((dot) => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.dataset.index);
+                goToSlide(index);
+                resetAutoplay();
+            });
+        });
+
+        // 키보드 네비게이션
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                goToSlide(currentIndex - 1);
+                resetAutoplay();
+            } else if (e.key === 'ArrowRight') {
+                goToSlide(currentIndex + 1);
+                resetAutoplay();
+            }
+        });
+
+        // 자동 재생
+        function startAutoplay() {
+            autoplayInterval = setInterval(() => {
+                goToSlide(currentIndex + 1);
+            }, 5000);
+        }
+
+        function resetAutoplay() {
+            clearInterval(autoplayInterval);
+            startAutoplay();
+        }
+
+        // 로딩 완료
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingCinematic').classList.add('hidden');
+                startAutoplay();
+            }, 1500);
+        });
+
+        // 마우스 휠로 슬라이드 전환
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    goToSlide(currentIndex + 1);
+                } else {
+                    goToSlide(currentIndex - 1);
+                }
+                resetAutoplay();
+            }, 50);
+        }, { passive: true });
+    });
+</script>
+{% endblock %}

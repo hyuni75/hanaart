@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}관리자 페이지{% endblock %} - 하나아트갤러리</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --primary-color: #4a90e2;
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 헤더 */
+        .admin-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .admin-header .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .admin-header .user-info {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* 사이드바 */
+        .admin-sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 0;
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+
+        /* 메인 컨텐츠 */
+        .admin-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+            background: #f5f6fa;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        /* 카드 */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* 버튼 */
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+            border-color: #3a7bc8;
+        }
+
+        /* 테이블 */
+        .table {
+            background: #fff;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="admin-header">
+        <div class="brand">
+            <i class="fas fa-palette"></i> 하나아트 관리자
+        </div>
+        <div class="user-info">
+            <span>{{ request.user.username }}</span>
+            <a href="/" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-home"></i> 홈으로
+            </a>
+            <a href="{% url 'admin_panel:logout' %}" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-sign-out-alt"></i> 로그아웃
+            </a>
+        </div>
+    </header>
+
+    <!-- 사이드바 -->
+    <aside class="admin-sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>대시보드</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:home_design_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'home_design_manage' %}active{% endif %}">
+                        <i class="fas fa-magic"></i>
+                        <span>홈 디자인 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:about_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'about_manage' %}active{% endif %}">
+                        <i class="fas fa-pen-fancy"></i>
+                        <span>인사말 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:history_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'history_manage' %}active{% endif %}">
+                        <i class="fas fa-history"></i>
+                        <span>연혁 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:artfair_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'artfair_manage' %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>아트페어 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:artist_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'artist_manage' %}active{% endif %}">
+                        <i class="fas fa-user-tie"></i>
+                        <span>작가 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:artwork_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'artwork_manage' %}active{% endif %}">
+                        <i class="fas fa-palette"></i>
+                        <span>작품 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:exhibition_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'exhibition_manage' %}active{% endif %}">
+                        <i class="fas fa-building"></i>
+                        <span>전시 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:frame_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'frame_manage' %}active{% endif %}">
+                        <i class="fas fa-image"></i>
+                        <span>액자 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:contact_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'contact_manage' %}active{% endif %}">
+                        <i class="fas fa-phone"></i>
+                        <span>연락처 관리</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_panel:template_manage' %}" class="nav-link {% if request.resolver_match.url_name == 'template_manage' %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i>
+                        <span>템플릿 관리</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="admin-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 공통 모달 및 토스트 시스템 -->
+    <script src="{% static 'js/modal-state-manager.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+
+    <!-- CSRF Token -->
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+
+        // jQuery AJAX 기본 설정
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

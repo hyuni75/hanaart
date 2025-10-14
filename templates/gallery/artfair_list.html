@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}아트페어 - 하나아트갤러리{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* PDF 5-6페이지 스타일 재현 */
+    .artfair-container {
+        margin-top: 70px;
+        max-width: 1200px;
+    }
+
+    .artfair-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        padding: 3rem 0;
+    }
+
+    .artfair-item {
+        text-align: center;
+    }
+
+    .artfair-item img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .artfair-item img:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .artfair-item .year {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .artfair-item .title {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    @media (max-width: 768px) {
+        .artfair-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container artfair-container">
+    <!-- Header Section -->
+    <section class="section-header text-center">
+        <h5 class="text-muted text-uppercase mb-2" style="font-size: 0.9rem; letter-spacing: 2px;">ART FAIR</h5>
+        <h1 class="section-title mb-0" style="font-weight: 700; font-size: 2rem;">아트 페어</h1>
+    </section>
+
+    <!-- Grid Section (데이터베이스 기반 동적 생성) -->
+    <section class="artfair-grid">
+        {% for artfair in artfairs %}
+        <div class="artfair-item">
+            {% if artfair.image %}
+                <img src="{{ artfair.image.url }}" alt="{{ artfair.year }} {{ artfair.title }}">
+            {% else %}
+                <img src="{% static 'images/placeholder.jpg' %}" alt="{{ artfair.year }} {{ artfair.title }}">
+            {% endif %}
+            <div class="year">{{ artfair.year }}</div>
+            <div class="title">{{ artfair.title }}</div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h3 class="text-muted">등록된 아트페어가 없습니다</h3>
+            <p class="text-muted">관리자 페이지에서 아트페어를 추가해주세요.</p>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}연혁 - 하나아트갤러리{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* PDF 3페이지 스타일 재현 */
+    .history-container {
+        margin-top: 70px;
+        max-width: 1200px;
+    }
+
+    .history-section {
+        padding: 3rem 0;
+    }
+
+    .history-item {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #4a90e2;
+    }
+
+    .history-item:last-child {
+        border-bottom: none;
+    }
+
+    .history-year {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .history-content {
+        color: #555;
+        font-size: 0.9rem;
+        line-height: 1.8;
+        white-space: pre-line;
+        padding-left: 1rem;
+    }
+
+    /* 2단 컬럼 균형 */
+    .history-column {
+        padding: 0 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .history-column {
+            padding: 0;
+        }
+
+        .history-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container history-container">
+    <!-- Header Section -->
+    <section class="section-header text-center">
+        <h5 class="text-muted text-uppercase mb-2" style="font-size: 0.9rem; letter-spacing: 2px;">HISTORY</h5>
+        <h1 class="section-title mb-0" style="font-weight: 700; font-size: 2rem;">연혁</h1>
+    </section>
+
+    <!-- List Section (PDF 스타일 2단 컬럼) -->
+    <section class="history-section">
+        <div class="row">
+            <!-- 좌측 컬럼 (1990-2007) -->
+            <div class="col-md-6 history-column">
+                {% for history in left_histories %}
+                <div class="history-item">
+                    <div class="history-year">{{ history.year }}</div>
+                    <div class="history-content">{{ history.content }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 우측 컬럼 (2008-2023) -->
+            <div class="col-md-6 history-column">
+                {% for history in right_histories %}
+                <div class="history-item">
+                    <div class="history-year">{{ history.year }}</div>
+                    <div class="history-content">{{ history.content }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

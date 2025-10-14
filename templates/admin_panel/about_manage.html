@@ -1,0 +1,394 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}인사말 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-pen-fancy"></i> 인사말 관리
+            </h1>
+            <p class="page-subtitle">인사말 페이지 내용을 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateAboutModal()">
+            <i class="fas fa-plus"></i> 인사말 추가
+        </button>
+    </div>
+</div>
+
+<!-- 인사말 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 인사말 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>제목</th>
+                        <th>첫 번째 문단</th>
+                        <th>등록일</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="aboutTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 삭제 대상 ID를 저장하는 전역 변수
+    let deleteTargetId = null;
+
+    // 페이지 로딩 시 인사말 목록 자동 로드
+    $(document).ready(function() {
+        loadAbouts();
+    });
+
+    /**
+     * 인사말 목록을 서버에서 불러와서 화면에 표시하는 함수
+     * API 호출: GET /admin-panel/api/about/list/
+     */
+    function loadAbouts() {
+        $.ajax({
+            url: '/admin-panel/api/about/list/',
+            method: 'GET',
+            timeout: 10000, // 10초 타임아웃
+            success: function(response) {
+                renderAbouts(response.abouts);
+            },
+            error: function(xhr, status, error) {
+                console.error('인사말 목록 로드 실패:', xhr.responseText, status, error);
+                showToast('인사말 목록을 불러오는데 실패했습니다.', 'error');
+                // 에러 발생 시 스피너 제거하고 에러 메시지 표시
+                $('#aboutTableBody').html(`
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-danger">
+                            인사말 목록을 불러오는데 실패했습니다.
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+
+    /**
+     * 인사말 목록을 테이블에 렌더링하는 함수
+     * @param {Array} abouts - 인사말 데이터 배열
+     */
+    function renderAbouts(abouts) {
+        const tbody = $('#aboutTableBody');
+        tbody.empty();
+
+        if (abouts.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        등록된 인사말이 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        abouts.forEach(function(about) {
+            const statusBadge = about.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            const content1Preview = about.content_1.length > 80
+                ? about.content_1.substring(0, 80) + '...'
+                : about.content_1;
+
+            tbody.append(`
+                <tr>
+                    <td><strong>${about.title}</strong></td>
+                    <td>${content1Preview}</td>
+                    <td>${about.created_at || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditAboutModal(${about.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteAboutModal(${about.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    /**
+     * 인사말 추가 모달을 여는 함수
+     * showCreateModal을 사용하여 생성 폼을 표시
+     */
+    function openCreateAboutModal() {
+        const formHTML = `
+            <div class="mb-3">
+                <label for="aboutTitle" class="form-label">제목 *</label>
+                <input type="text" class="form-control" id="aboutTitle" required value="인사말">
+            </div>
+            <div class="mb-3">
+                <label for="aboutContent1" class="form-label">첫 번째 문단 *</label>
+                <textarea class="form-control" id="aboutContent1" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="aboutContent2" class="form-label">두 번째 문단 *</label>
+                <textarea class="form-control" id="aboutContent2" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="aboutContent3" class="form-label">세 번째 문단 *</label>
+                <textarea class="form-control" id="aboutContent3" rows="4" required></textarea>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="aboutImage1Title" class="form-label">이미지1 제목</label>
+                        <input type="text" class="form-control" id="aboutImage1Title" value="전시장 내부">
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutImage1Desc" class="form-label">이미지1 설명</label>
+                        <input type="text" class="form-control" id="aboutImage1Desc">
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutImage1" class="form-label">이미지1</label>
+                        <input type="file" class="form-control" id="aboutImage1" accept="image/*">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="aboutImage2Title" class="form-label">이미지2 제목</label>
+                        <input type="text" class="form-control" id="aboutImage2Title" value="전시장 도면">
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutImage2Desc" class="form-label">이미지2 설명</label>
+                        <input type="text" class="form-control" id="aboutImage2Desc">
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutImage2" class="form-label">이미지2</label>
+                        <input type="file" class="form-control" id="aboutImage2" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="aboutIsActive" checked>
+                    <label class="form-check-label" for="aboutIsActive">활성화</label>
+                </div>
+            </div>
+        `;
+
+        window.showCreateModal('인사말 추가', formHTML, function($modal) {
+            saveAbout(false, $modal);
+        }, { modalId: 'aboutModal', size: 'modal-xl' });
+    }
+
+    /**
+     * 인사말 수정 모달을 여는 함수
+     * @param {number} id - 수정할 인사말의 ID
+     * API 호출: GET /admin-panel/api/about/{id}/
+     */
+    function openEditAboutModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/about/${id}/`,
+            method: 'GET',
+            timeout: 10000,
+            success: function(about) {
+
+                const image1Preview = about.image_1 ? `
+                    <div class="mt-2">
+                        <p class="mb-2">현재 이미지1:</p>
+                        <img src="${about.image_1}" alt="${about.image_1_title}"
+                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    </div>
+                ` : '';
+
+                const image2Preview = about.image_2 ? `
+                    <div class="mt-2">
+                        <p class="mb-2">현재 이미지2:</p>
+                        <img src="${about.image_2}" alt="${about.image_2_title}"
+                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    </div>
+                ` : '';
+
+                const formHTML = `
+                    <input type="hidden" id="aboutId" value="${about.id}">
+                    <div class="mb-3">
+                        <label for="aboutTitle" class="form-label">제목 *</label>
+                        <input type="text" class="form-control" id="aboutTitle" required value="${about.title}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutContent1" class="form-label">첫 번째 문단 *</label>
+                        <textarea class="form-control" id="aboutContent1" rows="4" required>${about.content_1}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutContent2" class="form-label">두 번째 문단 *</label>
+                        <textarea class="form-control" id="aboutContent2" rows="4" required>${about.content_2}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aboutContent3" class="form-label">세 번째 문단 *</label>
+                        <textarea class="form-control" id="aboutContent3" rows="4" required>${about.content_3}</textarea>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="aboutImage1Title" class="form-label">이미지1 제목</label>
+                                <input type="text" class="form-control" id="aboutImage1Title" value="${about.image_1_title}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="aboutImage1Desc" class="form-label">이미지1 설명</label>
+                                <input type="text" class="form-control" id="aboutImage1Desc" value="${about.image_1_desc || ''}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="aboutImage1" class="form-label">이미지1</label>
+                                <input type="file" class="form-control" id="aboutImage1" accept="image/*">
+                                ${image1Preview}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="aboutImage2Title" class="form-label">이미지2 제목</label>
+                                <input type="text" class="form-control" id="aboutImage2Title" value="${about.image_2_title}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="aboutImage2Desc" class="form-label">이미지2 설명</label>
+                                <input type="text" class="form-control" id="aboutImage2Desc" value="${about.image_2_desc || ''}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="aboutImage2" class="form-label">이미지2</label>
+                                <input type="file" class="form-control" id="aboutImage2" accept="image/*">
+                                ${image2Preview}
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="aboutIsActive" ${about.is_active ? 'checked' : ''}>
+                            <label class="form-check-label" for="aboutIsActive">활성화</label>
+                        </div>
+                    </div>
+                `;
+
+                window.showEditModal('인사말 수정', formHTML, function($modal) {
+                    saveAbout(true, $modal);
+                }, { modalId: 'aboutModal', size: 'modal-xl' });
+            },
+            error: function(xhr) {
+                console.error('인사말 조회 실패:', xhr.responseText);
+                showToast('인사말 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    /**
+     * 인사말 저장 함수 (생성 또는 수정)
+     * @param {boolean} isEdit - true면 수정, false면 생성
+     * @param {jQuery} $modal - 현재 열려있는 모달 jQuery 객체
+     * API 호출: POST /admin-panel/api/about/create/ (생성)
+     * API 호출: POST /admin-panel/api/about/{id}/update/ (수정)
+     */
+    function saveAbout(isEdit, $modal) {
+        const id = $('#aboutId').val();
+        const url = isEdit ? `/admin-panel/api/about/${id}/update/` : '/admin-panel/api/about/create/';
+
+        const formData = new FormData();
+        formData.append('title', $('#aboutTitle').val());
+        formData.append('content_1', $('#aboutContent1').val());
+        formData.append('content_2', $('#aboutContent2').val());
+        formData.append('content_3', $('#aboutContent3').val());
+        formData.append('image_1_title', $('#aboutImage1Title').val());
+        formData.append('image_1_desc', $('#aboutImage1Desc').val());
+        formData.append('image_2_title', $('#aboutImage2Title').val());
+        formData.append('image_2_desc', $('#aboutImage2Desc').val());
+        formData.append('is_active', $('#aboutIsActive').is(':checked') ? 'true' : 'false');
+
+        const image1File = $('#aboutImage1')[0].files[0];
+        if (image1File) {
+            formData.append('image_1', image1File);
+        }
+
+        const image2File = $('#aboutImage2')[0].files[0];
+        if (image2File) {
+            formData.append('image_2', image2File);
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            timeout: 10000,
+            success: function(response) {
+                showToast(isEdit ? '인사말 정보가 수정되었습니다.' : '인사말이 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadAbouts();
+            },
+            error: function(xhr) {
+                console.error('인사말 저장 실패:', xhr.responseText);
+                showToast('인사말 저장에 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    /**
+     * 인사말 삭제 확인 모달을 여는 함수
+     * @param {number} id - 삭제할 인사말의 ID
+     */
+    function openDeleteAboutModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 인사말을 삭제하시겠습니까?',
+            function($modal) {
+                confirmDelete($modal);
+            },
+            {
+                modalId: 'deleteAboutModal',
+                title: '인사말 삭제'
+            }
+        );
+    }
+
+    /**
+     * 인사말 삭제를 실행하는 함수
+     * @param {jQuery} $modal - 삭제 확인 모달 jQuery 객체
+     * API 호출: POST /admin-panel/api/about/{id}/delete/
+     */
+    function confirmDelete($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/about/${deleteTargetId}/delete/`,
+            method: 'POST',
+            timeout: 10000,
+            success: function(response) {
+                showToast('인사말이 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadAbouts();
+            },
+            error: function(xhr) {
+                console.error('인사말 삭제 실패:', xhr.responseText);
+                showToast('인사말 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

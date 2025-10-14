@@ -1,0 +1,384 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}전시 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-calendar-alt"></i> 전시 관리
+            </h1>
+            <p class="page-subtitle">갤러리 전시 일정을 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateExhibitionModal()">
+            <i class="fas fa-plus"></i> 전시 추가
+        </button>
+    </div>
+</div>
+
+<!-- 전시 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 전시 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순서</th>
+                        <th>전시명</th>
+                        <th>작가</th>
+                        <th>전시 기간</th>
+                        <th>장소</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="exhibitionTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+    let artistsData = [];
+    let exhibitionsData = [];
+
+    $(document).ready(function() {
+        loadArtists();
+        loadExhibitions();
+    });
+
+    function loadArtists() {
+        $.ajax({
+            url: '/admin-panel/api/artist/list/',
+            method: 'GET',
+            success: function(response) {
+                artistsData = response.artists;
+            },
+            error: function(xhr) {
+                console.error('작가 목록 로드 실패:', xhr.responseText);
+                showToast('작가 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function loadExhibitions() {
+        $.ajax({
+            url: '/admin-panel/api/exhibition/list/',
+            method: 'GET',
+            success: function(response) {
+                exhibitionsData = response.exhibitions;
+                renderExhibitions(response.exhibitions);
+            },
+            error: function(xhr) {
+                console.error('전시 목록 로드 실패:', xhr.responseText);
+                showToast('전시 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function renderExhibitions(exhibitions) {
+        const tbody = $('#exhibitionTableBody');
+        tbody.empty();
+
+        if (exhibitions.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        등록된 전시가 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        exhibitions.forEach(function(exhibition) {
+            const statusBadge = exhibition.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            const period = `${exhibition.start_date} ~ ${exhibition.end_date}`;
+
+            tbody.append(`
+                <tr>
+                    <td>${exhibition.order}</td>
+                    <td><strong>${exhibition.title}</strong></td>
+                    <td>${exhibition.artist}</td>
+                    <td>${period}</td>
+                    <td>${exhibition.location || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditExhibitionModal(${exhibition.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteExhibitionModal(${exhibition.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function openCreateExhibitionModal() {
+        const nextOrder = exhibitionsData.length + 1;
+
+        // 작가 선택 옵션 생성
+        let artistOptions = '<option value="">작가를 선택하세요</option>';
+        artistsData.forEach(function(artist) {
+            artistOptions += `<option value="${artist.id}">${artist.name}</option>`;
+        });
+
+        const formContent = `
+            <form id="exhibitionForm" enctype="multipart/form-data">
+                <input type="hidden" id="exhibitionId">
+
+                <div class="mb-3">
+                    <label for="exhibitionTitle" class="form-label">전시명 *</label>
+                    <input type="text" class="form-control" id="exhibitionTitle" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionTitleEn" class="form-label">영문 전시명</label>
+                    <input type="text" class="form-control" id="exhibitionTitleEn">
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionArtist" class="form-label">작가 *</label>
+                    <select class="form-select" id="exhibitionArtist" required>
+                        ${artistOptions}
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="exhibitionStartDate" class="form-label">시작일 *</label>
+                            <input type="date" class="form-control" id="exhibitionStartDate" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="exhibitionEndDate" class="form-label">종료일 *</label>
+                            <input type="date" class="form-control" id="exhibitionEndDate" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionLocation" class="form-label">전시 장소</label>
+                    <input type="text" class="form-control" id="exhibitionLocation" placeholder="예: 하나아트갤러리 본점">
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionDescription" class="form-label">설명</label>
+                    <textarea class="form-control" id="exhibitionDescription" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionImage" class="form-label">전시 포스터</label>
+                    <input type="file" class="form-control" id="exhibitionImage" accept="image/*">
+                    <div id="currentImagePreview" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="exhibitionOrder" class="form-label">순서 *</label>
+                    <input type="number" class="form-control" id="exhibitionOrder" value="${nextOrder}" required min="1">
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="exhibitionIsActive" checked>
+                        <label class="form-check-label" for="exhibitionIsActive">활성화</label>
+                    </div>
+                </div>
+            </form>
+        `;
+
+        window.showCreateModal('전시 추가', formContent, function($modal) {
+            saveExhibition(false, $modal);
+        }, { modalId: 'exhibitionModal', size: 'modal-lg' });
+    }
+
+    function openEditExhibitionModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/exhibition/${id}/`,
+            method: 'GET',
+            success: function(exhibition) {
+                // 작가 선택 옵션 생성 (선택된 작가 표시)
+                let artistOptions = '<option value="">작가를 선택하세요</option>';
+                artistsData.forEach(function(artist) {
+                    const selected = artist.id === exhibition.artist_id ? 'selected' : '';
+                    artistOptions += `<option value="${artist.id}" ${selected}>${artist.name}</option>`;
+                });
+
+                const formContent = `
+                    <form id="exhibitionForm" enctype="multipart/form-data">
+                        <input type="hidden" id="exhibitionId" value="${exhibition.id}">
+
+                        <div class="mb-3">
+                            <label for="exhibitionTitle" class="form-label">전시명 *</label>
+                            <input type="text" class="form-control" id="exhibitionTitle" value="${exhibition.title}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionTitleEn" class="form-label">영문 전시명</label>
+                            <input type="text" class="form-control" id="exhibitionTitleEn" value="${exhibition.title_en || ''}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionArtist" class="form-label">작가 *</label>
+                            <select class="form-select" id="exhibitionArtist" required>
+                                ${artistOptions}
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="exhibitionStartDate" class="form-label">시작일 *</label>
+                                    <input type="date" class="form-control" id="exhibitionStartDate" value="${exhibition.start_date}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="exhibitionEndDate" class="form-label">종료일 *</label>
+                                    <input type="date" class="form-control" id="exhibitionEndDate" value="${exhibition.end_date}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionLocation" class="form-label">전시 장소</label>
+                            <input type="text" class="form-control" id="exhibitionLocation" value="${exhibition.location || ''}" placeholder="예: 하나아트갤러리 본점">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionDescription" class="form-label">설명</label>
+                            <textarea class="form-control" id="exhibitionDescription" rows="3">${exhibition.description || ''}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionImage" class="form-label">전시 포스터</label>
+                            <input type="file" class="form-control" id="exhibitionImage" accept="image/*">
+                            <div id="currentImagePreview" class="mt-2">
+                                ${exhibition.poster_image ? `
+                                    <div class="mt-2">
+                                        <p class="mb-2">현재 포스터 이미지:</p>
+                                        <img src="${exhibition.poster_image}" alt="${exhibition.title}"
+                                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exhibitionOrder" class="form-label">순서 *</label>
+                            <input type="number" class="form-control" id="exhibitionOrder" value="${exhibition.order}" required min="1">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="exhibitionIsActive" ${exhibition.is_active ? 'checked' : ''}>
+                                <label class="form-check-label" for="exhibitionIsActive">활성화</label>
+                            </div>
+                        </div>
+                    </form>
+                `;
+
+                window.showEditModal('전시 수정', formContent, function($modal) {
+                    saveExhibition(true, $modal);
+                }, { modalId: 'exhibitionModal', size: 'modal-lg' });
+            },
+            error: function(xhr) {
+                console.error('전시 조회 실패:', xhr.responseText);
+                showToast('전시 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveExhibition(isEdit, $modal) {
+        const id = $('#exhibitionId').val();
+        const url = isEdit ? `/admin-panel/api/exhibition/${id}/update/` : '/admin-panel/api/exhibition/create/';
+
+        const formData = new FormData();
+        formData.append('title', $('#exhibitionTitle').val());
+        formData.append('title_en', $('#exhibitionTitleEn').val() || '');
+        formData.append('artist_id', $('#exhibitionArtist').val());
+        formData.append('start_date', $('#exhibitionStartDate').val());
+        formData.append('end_date', $('#exhibitionEndDate').val());
+        formData.append('location', $('#exhibitionLocation').val() || '');
+        formData.append('description', $('#exhibitionDescription').val() || '');
+        formData.append('order', $('#exhibitionOrder').val());
+        formData.append('is_active', $('#exhibitionIsActive').is(':checked') ? 'true' : 'false');
+
+        const imageFile = $('#exhibitionImage')[0].files[0];
+        if (imageFile) {
+            formData.append('poster_image', imageFile);
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                showToast(isEdit ? '전시 정보가 수정되었습니다.' : '전시가 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadExhibitions();
+            },
+            error: function(xhr) {
+                console.error('전시 저장 실패:', xhr.responseText);
+                const errorMsg = xhr.responseJSON?.message || '전시 저장에 실패했습니다.';
+                showToast(errorMsg, 'error');
+            }
+        });
+    }
+
+    function openDeleteExhibitionModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 전시를 삭제하시겠습니까?',
+            function($modal) {
+                confirmDeleteExhibition($modal);
+            },
+            {
+                modalId: 'exhibitionDeleteModal',
+                title: '전시 삭제'
+            }
+        );
+    }
+
+    function confirmDeleteExhibition($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/exhibition/${deleteTargetId}/delete/`,
+            method: 'POST',
+            success: function(response) {
+                showToast('전시가 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadExhibitions();
+            },
+            error: function(xhr) {
+                console.error('전시 삭제 실패:', xhr.responseText);
+                showToast('전시 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

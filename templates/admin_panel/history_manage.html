@@ -1,0 +1,258 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}연혁 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-history"></i> 연혁 관리
+            </h1>
+            <p class="page-subtitle">갤러리의 연혁을 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateHistoryModal()">
+            <i class="fas fa-plus"></i> 연혁 추가
+        </button>
+    </div>
+</div>
+
+<!-- 연혁 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 연혁 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순서</th>
+                        <th style="width: 100px;">연도</th>
+                        <th>내용</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+
+    $(document).ready(function() {
+        // 연혁 목록 로드
+        loadHistories();
+    });
+
+    function loadHistories() {
+        $.ajax({
+            url: '/admin-panel/api/history/list/',
+            method: 'GET',
+            success: function(response) {
+                renderHistories(response.histories);
+            },
+            error: function(xhr) {
+                console.error('연혁 목록 로드 실패:', xhr.responseText);
+                showToast('연혁 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function renderHistories(histories) {
+        const tbody = $('#historyTableBody');
+        tbody.empty();
+
+        if (histories.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        등록된 연혁이 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        histories.forEach(function(history) {
+            const contentPreview = history.content.length > 50
+                ? history.content.substring(0, 50) + '...'
+                : history.content;
+
+            const statusBadge = history.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            tbody.append(`
+                <tr>
+                    <td>${history.order}</td>
+                    <td><strong>${history.year}</strong></td>
+                    <td><div style="white-space: pre-line;">${contentPreview}</div></td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditHistoryModal(${history.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteHistoryModal(${history.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function openCreateHistoryModal() {
+        // 실제 연혁 개수로 계산 (빈 메시지 행 제외)
+        const actualCount = $('#historyTableBody tr').filter(function() {
+            return !$(this).find('.text-muted').length;
+        }).length;
+        const nextOrder = actualCount + 1;
+
+        const formHTML = `
+            <div class="mb-3">
+                <label for="historyYear" class="form-label">연도 *</label>
+                <input type="number" class="form-control" id="historyYear" required
+                       min="1900" max="2100" placeholder="예: 2023">
+            </div>
+            <div class="mb-3">
+                <label for="historyContent" class="form-label">내용 *</label>
+                <textarea class="form-control" id="historyContent" rows="6" required
+                          placeholder="연혁 내용을 입력하세요"></textarea>
+                <small class="text-muted">여러 줄 입력 가능 (Enter로 줄바꿈)</small>
+            </div>
+            <div class="mb-3">
+                <label for="historyOrder" class="form-label">순서 *</label>
+                <input type="number" class="form-control" id="historyOrder" required
+                       min="1" placeholder="표시 순서 (숫자가 작을수록 먼저 표시)" value="${nextOrder}">
+            </div>
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="historyIsActive" checked>
+                    <label class="form-check-label" for="historyIsActive">활성화</label>
+                </div>
+            </div>
+        `;
+
+        window.showCreateModal('연혁 추가', formHTML, function($modal) {
+            saveHistory(false, $modal);
+        }, { modalId: 'historyModal', size: 'modal-lg' });
+    }
+
+    function openEditHistoryModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/history/${id}/`,
+            method: 'GET',
+            success: function(history) {
+
+                const formHTML = `
+                    <input type="hidden" id="historyId" value="${history.id}">
+                    <div class="mb-3">
+                        <label for="historyYear" class="form-label">연도 *</label>
+                        <input type="number" class="form-control" id="historyYear" required
+                               min="1900" max="2100" value="${history.year}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="historyContent" class="form-label">내용 *</label>
+                        <textarea class="form-control" id="historyContent" rows="6" required>${history.content}</textarea>
+                        <small class="text-muted">여러 줄 입력 가능 (Enter로 줄바꿈)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="historyOrder" class="form-label">순서 *</label>
+                        <input type="number" class="form-control" id="historyOrder" required
+                               min="1" value="${history.order}">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="historyIsActive" ${history.is_active ? 'checked' : ''}>
+                            <label class="form-check-label" for="historyIsActive">활성화</label>
+                        </div>
+                    </div>
+                `;
+
+                window.showEditModal('연혁 수정', formHTML, function($modal) {
+                    saveHistory(true, $modal);
+                }, { modalId: 'historyModal', size: 'modal-lg' });
+            },
+            error: function(xhr) {
+                console.error('연혁 조회 실패:', xhr.responseText);
+                showToast('연혁 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveHistory(isEdit, $modal) {
+        const id = $('#historyId').val();
+        const url = isEdit ? `/admin-panel/api/history/${id}/` : '/admin-panel/api/history/create/';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const data = {
+            year: $('#historyYear').val(),
+            content: $('#historyContent').val(),
+            order: $('#historyOrder').val(),
+            is_active: $('#historyIsActive').is(':checked')
+        };
+
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            success: function(response) {
+                showToast(isEdit ? '연혁이 수정되었습니다.' : '연혁이 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadHistories();
+            },
+            error: function(xhr) {
+                console.error('연혁 저장 실패:', xhr.responseText);
+                showToast('연혁 저장에 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function openDeleteHistoryModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 연혁을 삭제하시겠습니까?',
+            function($modal) {
+                confirmDelete($modal);
+            },
+            {
+                modalId: 'deleteHistoryModal',
+                title: '연혁 삭제',
+                dangerText: '이 작업은 되돌릴 수 없습니다.'
+            }
+        );
+    }
+
+    function confirmDelete($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/history/${deleteTargetId}/`,
+            method: 'DELETE',
+            success: function(response) {
+                showToast('연혁이 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadHistories();
+            },
+            error: function(xhr) {
+                console.error('연혁 삭제 실패:', xhr.responseText);
+                showToast('연혁 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

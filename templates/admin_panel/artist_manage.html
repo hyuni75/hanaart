@@ -1,0 +1,311 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}작가 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-user-tie"></i> 작가 관리
+            </h1>
+            <p class="page-subtitle">갤러리 소속 작가를 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateArtistModal()">
+            <i class="fas fa-plus"></i> 작가 추가
+        </button>
+    </div>
+</div>
+
+<!-- 작가 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 작가 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순서</th>
+                        <th>작가명</th>
+                        <th>영문명</th>
+                        <th>설명</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="artistTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+    let artistsData = [];
+
+    $(document).ready(function() {
+        loadArtists();
+    });
+
+    function loadArtists() {
+        $.ajax({
+            url: '/admin-panel/api/artist/list/',
+            method: 'GET',
+            timeout: 10000, // 10초 타임아웃
+            success: function(response) {
+                artistsData = response.artists;
+                renderArtists(response.artists);
+            },
+            error: function(xhr, status, error) {
+                console.error('작가 목록 로드 실패:', xhr.responseText, status, error);
+                showToast('작가 목록을 불러오는데 실패했습니다.', 'error');
+                // 에러 발생 시 스피너 제거하고 에러 메시지 표시
+                $('#artistTableBody').html(`
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-danger">
+                            작가 목록을 불러오는데 실패했습니다.
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+
+    function renderArtists(artists) {
+        const tbody = $('#artistTableBody');
+        tbody.empty();
+
+        if (artists.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        등록된 작가가 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        artists.forEach(function(artist) {
+            const descPreview = artist.description.length > 50
+                ? artist.description.substring(0, 50) + '...'
+                : artist.description;
+
+            const statusBadge = artist.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            tbody.append(`
+                <tr>
+                    <td>${artist.order}</td>
+                    <td><strong>${artist.name}</strong></td>
+                    <td>${artist.name_en || '-'}</td>
+                    <td>${descPreview}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditArtistModal(${artist.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteArtistModal(${artist.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function openCreateArtistModal() {
+        const nextOrder = artistsData.length + 1;
+
+        const formContent = `
+            <form id="artistForm" enctype="multipart/form-data">
+                <input type="hidden" id="artistId">
+
+                <div class="mb-3">
+                    <label for="artistName" class="form-label">작가명 *</label>
+                    <input type="text" class="form-control" id="artistName" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artistNameEn" class="form-label">영문명</label>
+                    <input type="text" class="form-control" id="artistNameEn">
+                </div>
+
+                <div class="mb-3">
+                    <label for="artistDescription" class="form-label">작가 설명 *</label>
+                    <textarea class="form-control" id="artistDescription" rows="4" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artistProfileImage" class="form-label">프로필 이미지</label>
+                    <input type="file" class="form-control" id="artistProfileImage" accept="image/*">
+                    <div id="currentProfilePreview" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artistOrder" class="form-label">순서 *</label>
+                    <input type="number" class="form-control" id="artistOrder" value="${nextOrder}" required min="1">
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="artistIsActive" checked>
+                        <label class="form-check-label" for="artistIsActive">활성화</label>
+                    </div>
+                </div>
+            </form>
+        `;
+
+        window.showCreateModal('작가 추가', formContent, function($modal) {
+            saveArtist(false, $modal);
+        }, { modalId: 'artistModal', size: 'modal-lg' });
+    }
+
+    function openEditArtistModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/artist/${id}/`,
+            method: 'GET',
+            timeout: 10000,
+            success: function(artist) {
+
+                const formContent = `
+                    <form id="artistForm" enctype="multipart/form-data">
+                        <input type="hidden" id="artistId" value="${artist.id}">
+
+                        <div class="mb-3">
+                            <label for="artistName" class="form-label">작가명 *</label>
+                            <input type="text" class="form-control" id="artistName" value="${artist.name}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artistNameEn" class="form-label">영문명</label>
+                            <input type="text" class="form-control" id="artistNameEn" value="${artist.name_en || ''}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artistDescription" class="form-label">작가 설명 *</label>
+                            <textarea class="form-control" id="artistDescription" rows="4" required>${artist.description}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artistProfileImage" class="form-label">프로필 이미지</label>
+                            <input type="file" class="form-control" id="artistProfileImage" accept="image/*">
+                            <div id="currentProfilePreview" class="mt-2">
+                                ${artist.profile_image ? `
+                                    <div class="mt-2">
+                                        <p class="mb-2">현재 프로필 이미지:</p>
+                                        <img src="${artist.profile_image}" alt="${artist.name}"
+                                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artistOrder" class="form-label">순서 *</label>
+                            <input type="number" class="form-control" id="artistOrder" value="${artist.order}" required min="1">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="artistIsActive" ${artist.is_active ? 'checked' : ''}>
+                                <label class="form-check-label" for="artistIsActive">활성화</label>
+                            </div>
+                        </div>
+                    </form>
+                `;
+
+                window.showEditModal('작가 수정', formContent, function($modal) {
+                    saveArtist(true, $modal);
+                }, { modalId: 'artistModal', size: 'modal-lg' });
+            },
+            error: function(xhr) {
+                console.error('작가 조회 실패:', xhr.responseText);
+                showToast('작가 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveArtist(isEdit, $modal) {
+        const id = $('#artistId').val();
+        const url = isEdit ? `/admin-panel/api/artist/${id}/update/` : '/admin-panel/api/artist/create/';
+
+        const formData = new FormData();
+        formData.append('name', $('#artistName').val());
+        formData.append('name_en', $('#artistNameEn').val() || '');
+        formData.append('description', $('#artistDescription').val());
+        formData.append('order', $('#artistOrder').val());
+        formData.append('is_active', $('#artistIsActive').is(':checked') ? 'true' : 'false');
+
+        const imageFile = $('#artistProfileImage')[0].files[0];
+        if (imageFile) {
+            formData.append('profile_image', imageFile);
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            timeout: 10000,
+            success: function(response) {
+                showToast(isEdit ? '작가 정보가 수정되었습니다.' : '작가가 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadArtists();
+            },
+            error: function(xhr) {
+                console.error('작가 저장 실패:', xhr.responseText);
+                const errorMsg = xhr.responseJSON?.message || '작가 저장에 실패했습니다.';
+                showToast(errorMsg, 'error');
+            }
+        });
+    }
+
+    function openDeleteArtistModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 작가를 삭제하시겠습니까?',
+            function($modal) {
+                confirmDeleteArtist($modal);
+            },
+            {
+                modalId: 'artistDeleteModal',
+                title: '작가 삭제',
+                dangerText: '작가의 모든 작품도 함께 삭제됩니다!'
+            }
+        );
+    }
+
+    function confirmDeleteArtist($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/artist/${deleteTargetId}/delete/`,
+            method: 'POST',
+            timeout: 10000,
+            success: function(response) {
+                showToast('작가가 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadArtists();
+            },
+            error: function(xhr) {
+                console.error('작가 삭제 실패:', xhr.responseText);
+                showToast('작가 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

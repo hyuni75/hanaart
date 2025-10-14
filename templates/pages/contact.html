@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}연락처 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 70px;">
+    <!-- Header Section -->
+    <section class="section-header">
+        <h5 class="text-muted text-uppercase">CONTACT</h5>
+        <h1 class="section-title">연락처</h1>
+    </section>
+
+    <!-- Contact Info Section -->
+    <section class="section">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4 text-center">하나아트갤러리 본점(인사동)</h3>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-person-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1"><strong>대표</strong></h6>
+                                        <p class="mb-0">이방은 (Lee, Bang-Eun)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-telephone-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1"><strong>대표번호</strong></h6>
+                                        <p class="mb-0">
+                                            T. <a href="tel:02-736-7877">02-736-7877</a><br>
+                                            F. 02-736-4877
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-phone-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1"><strong>휴대전화</strong></h6>
+                                        <p class="mb-0">
+                                            M. <a href="tel:010-8681-7277">010-8681-7277</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-envelope-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1"><strong>이메일</strong></h6>
+                                        <p class="mb-0">
+                                            <a href="mailto:hanaartag@naver.com">hanaartag@naver.com</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-geo-alt-fill text-primary" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1"><strong>주소</strong></h6>
+                                    <p class="mb-1">서울특별시 종로구 인사동10길 2, 단성빌딩 2층(갤러리) / 3층(액자)</p>
+                                    <p class="text-muted mb-0">2, Insadong 10-gil, Jongno-gu, Seoul, Republic of Korea</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+{% endblock %}

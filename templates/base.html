@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}하나아트갤러리{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar (PDF 디자인 기반) -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'pages:home' %}">
+                <img src="{% static 'images/ci_hana-transport.png' %}" alt="하나아트갤러리">
+                <span class="d-none d-lg-inline">HANA ART GALLERY</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pages:home' %}">홈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pages:about' %}">인사말</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pages:history' %}">연혁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'gallery:exhibition_list' %}">전시</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'gallery:artfair_list' %}">아트페어</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'gallery:artist_list' %}">작가</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'gallery:frame' %}">액자제작</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pages:contact' %}">연락처</a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="{% url 'admin_panel:index' %}">관리</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer (PDF 디자인 기반) -->
+    <footer class="footer py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- 로고 -->
+                <div class="col-md-3 mb-3 mb-md-0 text-center text-md-start">
+                    <img src="{% static 'images/ci_hana-transport.png' %}" alt="하나아트갤러리" height="80" class="mb-2">
+                    <p class="text-muted small mt-2 mb-0">© 2024 하나아트갤러리</p>
+                </div>
+
+                <!-- 연락처 정보 -->
+                <div class="col-md-9">
+                    <h5 class="mb-2">하나아트갤러리본점(인사동)</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>대표</strong> : 이방은</p>
+                            <p class="mb-1"><strong>주소</strong> : 서울시 종로구 인사동10길 2 단성빌딩 2층(갤러리) / 3층(액자)</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1"><strong>대표번호</strong> : 02)736-0077</p>
+                            <p class="mb-1"><a href="http://www.hanaart.kr">www.hanaart.kr</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery 3.6+ -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Common JS -->
+    <script src="{% static 'js/common.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+    <script src="{% static 'js/modal-state-manager.js' %}"></script>
+    <script src="{% static 'js/gallery-modal.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Navbar 스크롤 효과
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 50) {
+                $('#mainNavbar').addClass('navbar-scrolled');
+            } else {
+                $('#mainNavbar').removeClass('navbar-scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

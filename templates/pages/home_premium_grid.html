@@ -1,0 +1,453 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>하나아트갤러리 - Premium Grid</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* base.html 요소 강제 숨김 - 충돌 방지 */
+        #mainNavbar,
+        .navbar,
+        .footer,
+        footer {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* main 태그 리셋 */
+        main {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Premium Navigation */
+        .premium-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            mix-blend-mode: difference;
+            pointer-events: none;
+        }
+
+        .premium-nav * {
+            pointer-events: auto;
+        }
+
+        .nav-logo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero */
+        .hero-premium {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-title-premium {
+            font-size: clamp(4rem, 12vw, 10rem);
+            font-weight: 300;
+            letter-spacing: -0.04em;
+            margin-bottom: 2rem;
+        }
+
+        .hero-subtitle-premium {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            opacity: 0.6;
+        }
+
+        /* Premium Grid - 모든 작품 표시 */
+        .gallery-grid-premium {
+            padding: 10vh 4rem;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .grid-item-premium {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            grid-column: span 4; /* 기본 3개씩 */
+        }
+
+        /* 비대칭 레이아웃 반복 패턴 */
+        .grid-item-premium:nth-child(12n+1) { grid-column: span 5; }
+        .grid-item-premium:nth-child(12n+2) { grid-column: span 7; }
+        .grid-item-premium:nth-child(12n+3) { grid-column: span 4; }
+        .grid-item-premium:nth-child(12n+4) { grid-column: span 4; }
+        .grid-item-premium:nth-child(12n+5) { grid-column: span 4; }
+        .grid-item-premium:nth-child(12n+6) { grid-column: span 6; }
+        .grid-item-premium:nth-child(12n+7) { grid-column: span 6; }
+        .grid-item-premium:nth-child(12n+8) { grid-column: span 7; }
+        .grid-item-premium:nth-child(12n+9) { grid-column: span 5; }
+        .grid-item-premium:nth-child(12n+10) { grid-column: span 4; }
+        .grid-item-premium:nth-child(12n+11) { grid-column: span 8; }
+        .grid-item-premium:nth-child(12n+12) { grid-column: span 4; }
+
+        .grid-item-inner {
+            position: relative;
+            width: 100%;
+            padding-bottom: 133%;
+            overflow: hidden;
+            border-radius: 4px;
+            background: #111;
+        }
+
+        .grid-item-premium:nth-child(even) .grid-item-inner {
+            padding-bottom: 100%;
+        }
+
+        .grid-item-premium img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .grid-item-premium:hover img {
+            transform: scale(1.1);
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3) 40%, transparent);
+            opacity: 0;
+            transition: opacity 0.6s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2rem;
+        }
+
+        .grid-item-premium:hover .grid-overlay {
+            opacity: 1;
+        }
+
+        .grid-overlay h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid-overlay p {
+            font-size: 0.95rem;
+            opacity: 0.7;
+        }
+
+        /* Lightbox */
+        .lightbox-premium {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(40px);
+        }
+
+        .lightbox-premium.active {
+            display: flex;
+        }
+
+        .lightbox-content-premium img {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .lightbox-info-premium {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .lightbox-info-premium h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .lightbox-close-premium {
+            position: fixed;
+            top: 3rem;
+            right: 3rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+
+        .lightbox-close-premium:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .lightbox-close-premium::before,
+        .lightbox-close-premium::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 2px;
+            background: #fff;
+        }
+
+        .lightbox-close-premium::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .lightbox-close-premium::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        /* Custom Cursor */
+        .custom-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.2s;
+        }
+
+        .custom-cursor.active {
+            transform: scale(2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .gallery-grid-premium {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .grid-item-premium {
+                grid-column: span 3 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .gallery-grid-premium {
+                grid-template-columns: 1fr;
+                padding: 5vh 2rem;
+            }
+
+            .grid-item-premium {
+                grid-column: span 1 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+
+    <!-- Navigation -->
+    <nav class="premium-nav">
+        <a href="/" class="nav-logo">하나아트갤러리</a>
+        <ul class="nav-menu">
+            <li><a href="{% url 'pages:about' %}">인사말</a></li>
+            <li><a href="{% url 'pages:history' %}">연혁</a></li>
+            <li><a href="{% url 'gallery:exhibition_list' %}">전시</a></li>
+            <li><a href="{% url 'gallery:artist_list' %}">작가</a></li>
+            <li><a href="{% url 'gallery:artfair_list' %}">아트페어</a></li>
+            <li><a href="{% url 'gallery:frame' %}">액자제작</a></li>
+            <li><a href="{% url 'pages:contact' %}">연락처</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero-premium">
+        <h1 class="hero-title-premium">HANA ART</h1>
+        <p class="hero-subtitle-premium">SINCE 1990</p>
+    </section>
+
+    <!-- Grid -->
+    <section class="gallery-grid-premium">
+        {% for artwork in featured_artworks %}
+        <div class="grid-item-premium">
+            <div class="grid-item-inner">
+                <img src="{{ artwork.image.url }}" alt="{{ artwork.title }}" loading="lazy">
+                <div class="grid-overlay">
+                    <h3>{{ artwork.title }}</h3>
+                    <p>{{ artwork.artist.name }}{% if artwork.year %} · {{ artwork.year }}{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+
+    <!-- Lightbox -->
+    <div class="lightbox-premium" id="lightbox">
+        <div class="lightbox-close-premium" onclick="closeLightbox()"></div>
+        <div class="lightbox-content-premium">
+            <img id="lightboxImg" src="" alt="">
+            <div class="lightbox-info-premium">
+                <h3 id="lightboxTitle"></h3>
+                <p id="lightboxArtist"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP + Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <script>
+        // Lenis Smooth Scroll
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smooth: true
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // GSAP Integration
+        gsap.registerPlugin(ScrollTrigger);
+        lenis.on('scroll', ScrollTrigger.update);
+
+        // Custom Cursor
+        const cursor = document.querySelector('.custom-cursor');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        document.querySelectorAll('a, .grid-item-premium').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+        });
+
+        // Lightbox
+        const lightbox = document.getElementById('lightbox');
+        document.querySelectorAll('.grid-item-premium').forEach(item => {
+            item.addEventListener('click', function() {
+                const img = this.querySelector('img');
+                const title = this.querySelector('.grid-overlay h3').textContent;
+                const artist = this.querySelector('.grid-overlay p').textContent;
+
+                document.getElementById('lightboxImg').src = img.src;
+                document.getElementById('lightboxTitle').textContent = title;
+                document.getElementById('lightboxArtist').textContent = artist;
+
+                lightbox.classList.add('active');
+                lenis.stop();
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lenis.start();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>

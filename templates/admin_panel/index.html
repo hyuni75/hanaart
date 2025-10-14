@@ -1,0 +1,164 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}대시보드{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-chart-line"></i> 대시보드
+    </h1>
+    <p class="page-subtitle">하나아트갤러리 관리자 페이지에 오신 것을 환영합니다</p>
+</div>
+
+<!-- 통계 카드 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-history fa-3x text-primary"></i>
+                </div>
+                <h3 class="mb-1" id="historyCount">-</h3>
+                <p class="text-muted mb-0">연혁</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-alt fa-3x text-success"></i>
+                </div>
+                <h3 class="mb-1" id="artfairCount">-</h3>
+                <p class="text-muted mb-0">아트페어</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-tie fa-3x text-warning"></i>
+                </div>
+                <h3 class="mb-1" id="artistCount">-</h3>
+                <p class="text-muted mb-0">작가</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-image fa-3x text-info"></i>
+                </div>
+                <h3 class="mb-1" id="artworkCount">-</h3>
+                <p class="text-muted mb-0">작품</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 빠른 접근 -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> 빠른 접근
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'admin_panel:history_manage' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-history"></i> 연혁 관리
+                    </a>
+                    <a href="{% url 'admin_panel:artfair_manage' %}" class="btn btn-outline-success">
+                        <i class="fas fa-calendar-alt"></i> 아트페어 관리
+                    </a>
+                    <a href="{% url 'admin_panel:artist_manage' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-user-tie"></i> 작가 관리
+                    </a>
+                    <a href="{% url 'admin_panel:artwork_manage' %}" class="btn btn-outline-info">
+                        <i class="fas fa-image"></i> 작품 관리
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 시스템 정보
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">관리자</td>
+                            <td class="text-end fw-semibold">{{ request.user.username }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">접속 시간</td>
+                            <td class="text-end fw-semibold" id="currentTime">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">데이터베이스</td>
+                            <td class="text-end fw-semibold">MariaDB 10.11</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">프레임워크</td>
+                            <td class="text-end fw-semibold">Django 5.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // 통계 데이터 로드
+        loadStatistics();
+
+        // 현재 시간 표시
+        updateTime();
+        setInterval(updateTime, 1000);
+    });
+
+    function loadStatistics() {
+        $.ajax({
+            url: '/admin-panel/api/statistics/',
+            method: 'GET',
+            success: function(response) {
+                $('#historyCount').text(response.history_count || 0);
+                $('#artfairCount').text(response.artfair_count || 0);
+                $('#artistCount').text(response.artist_count || 0);
+                $('#artworkCount').text(response.artwork_count || 0);
+            },
+            error: function(xhr) {
+                console.error('통계 데이터 로드 실패:', xhr.responseText);
+                // 실패 시 0으로 표시
+                $('#historyCount').text('0');
+                $('#artfairCount').text('0');
+                $('#artistCount').text('0');
+                $('#artworkCount').text('0');
+            }
+        });
+    }
+
+    function updateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        $('#currentTime').text(timeStr);
+    }
+</script>
+{% endblock %}

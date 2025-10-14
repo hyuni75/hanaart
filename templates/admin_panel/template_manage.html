@@ -1,0 +1,130 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}템플릿 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">템플릿 관리</h1>
+    <p class="page-subtitle">페이지 템플릿 및 섹션 관리</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">템플릿 목록</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            이 페이지는 향후 템플릿 섹션 관리 기능이 추가될 예정입니다.
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-home text-primary"></i> 홈 디자인
+                        </h5>
+                        <p class="card-text">수억원급 프리미엄 홈 디자인 3종 관리</p>
+                        <a href="{% url 'admin_panel:home_design_manage' %}" class="btn btn-primary">
+                            <i class="fas fa-magic"></i> 디자인 관리
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-pen-fancy text-secondary"></i> 인사말
+                        </h5>
+                        <p class="card-text">갤러리 인사말 및 소개 관리</p>
+                        <a href="{% url 'admin_panel:about_manage' %}" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> 관리하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-history text-success"></i> 연혁
+                        </h5>
+                        <p class="card-text">갤러리 연혁 관리</p>
+                        <a href="{% url 'admin_panel:history_manage' %}" class="btn btn-success">
+                            <i class="fas fa-edit"></i> 관리하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-phone text-warning"></i> 연락처
+                        </h5>
+                        <p class="card-text">갤러리 연락처 및 위치 정보 관리</p>
+                        <a href="{% url 'admin_panel:contact_manage' %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> 관리하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-frame text-info"></i> 액자제작
+                        </h5>
+                        <p class="card-text">액자 제작 정보 및 이미지 관리</p>
+                        <a href="{% url 'admin_panel:frame_manage' %}" class="btn btn-info">
+                            <i class="fas fa-edit"></i> 관리하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-user-tie text-danger"></i> 작가
+                        </h5>
+                        <p class="card-text">작가 프로필 및 작품 관리</p>
+                        <a href="{% url 'admin_panel:artist_manage' %}" class="btn btn-danger">
+                            <i class="fas fa-edit"></i> 관리하기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-text {
+        color: #7f8c8d;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}

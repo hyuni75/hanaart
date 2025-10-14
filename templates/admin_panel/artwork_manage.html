@@ -1,0 +1,363 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}작품 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-palette"></i> 작품 관리
+            </h1>
+            <p class="page-subtitle">작가별 작품을 관리합니다</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateArtworkModal()">
+            <i class="fas fa-plus"></i> 작품 추가
+        </button>
+    </div>
+</div>
+
+<!-- 작품 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 작품 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순서</th>
+                        <th>작품명</th>
+                        <th>작가</th>
+                        <th>크기</th>
+                        <th>제작년도</th>
+                        <th>가격</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="artworkTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+    let artistsData = [];
+    let artworksData = [];
+
+    $(document).ready(function() {
+        loadArtists();
+        loadArtworks();
+    });
+
+    function loadArtists() {
+        $.ajax({
+            url: '/admin-panel/api/artist/list/',
+            method: 'GET',
+            success: function(response) {
+                artistsData = response.artists;
+            },
+            error: function(xhr) {
+                console.error('작가 목록 로드 실패:', xhr.responseText);
+                showToast('작가 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function loadArtworks() {
+        $.ajax({
+            url: '/admin-panel/api/artwork/list/',
+            method: 'GET',
+            success: function(response) {
+                artworksData = response.artworks;
+                renderArtworks(response.artworks);
+            },
+            error: function(xhr) {
+                console.error('작품 목록 로드 실패:', xhr.responseText);
+                showToast('작품 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function renderArtworks(artworks) {
+        const tbody = $('#artworkTableBody');
+        tbody.empty();
+
+        if (artworks.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        등록된 작품이 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        artworks.forEach(function(artwork) {
+            const statusBadge = artwork.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            tbody.append(`
+                <tr>
+                    <td>${artwork.order}</td>
+                    <td><strong>${artwork.title}</strong></td>
+                    <td>${artwork.artist_name}</td>
+                    <td>${artwork.size || '-'}</td>
+                    <td>${artwork.year || '-'}</td>
+                    <td>${artwork.price || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditArtworkModal(${artwork.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteArtworkModal(${artwork.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function openCreateArtworkModal() {
+        const nextOrder = artworksData.length + 1;
+
+        // 작가 선택 옵션 생성
+        let artistOptions = '<option value="">작가 선택</option>';
+        artistsData.forEach(function(artist) {
+            artistOptions += `<option value="${artist.id}">${artist.name}</option>`;
+        });
+
+        const formContent = `
+            <form id="artworkForm" enctype="multipart/form-data">
+                <input type="hidden" id="artworkId">
+
+                <div class="mb-3">
+                    <label for="artworkArtist" class="form-label">작가 *</label>
+                    <select class="form-select" id="artworkArtist" required>
+                        ${artistOptions}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkTitle" class="form-label">작품명 *</label>
+                    <input type="text" class="form-control" id="artworkTitle" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkTitleEn" class="form-label">영문 작품명</label>
+                    <input type="text" class="form-control" id="artworkTitleEn">
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkSize" class="form-label">작품 크기</label>
+                    <input type="text" class="form-control" id="artworkSize" placeholder="예: 53x45.5cm">
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkYear" class="form-label">제작년도</label>
+                    <input type="text" class="form-control" id="artworkYear" placeholder="예: 2024">
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkPrice" class="form-label">가격</label>
+                    <input type="text" class="form-control" id="artworkPrice" placeholder="예: 5,000,000">
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkImage" class="form-label">작품 이미지</label>
+                    <input type="file" class="form-control" id="artworkImage" accept="image/*">
+                    <div id="currentImagePreview" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="artworkOrder" class="form-label">순서 *</label>
+                    <input type="number" class="form-control" id="artworkOrder" value="${nextOrder}" required min="1">
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="artworkIsActive" checked>
+                        <label class="form-check-label" for="artworkIsActive">활성화</label>
+                    </div>
+                </div>
+            </form>
+        `;
+
+        window.showCreateModal('작품 추가', formContent, function($modal) {
+            saveArtwork(false, $modal);
+        }, { modalId: 'artworkModal', size: 'modal-lg' });
+    }
+
+    function openEditArtworkModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/artwork/${id}/`,
+            method: 'GET',
+            success: function(artwork) {
+                // 작가 선택 옵션 생성 (선택된 작가 표시)
+                let artistOptions = '<option value="">작가 선택</option>';
+                artistsData.forEach(function(artist) {
+                    const selected = artist.id === artwork.artist ? 'selected' : '';
+                    artistOptions += `<option value="${artist.id}" ${selected}>${artist.name}</option>`;
+                });
+
+                const formContent = `
+                    <form id="artworkForm" enctype="multipart/form-data">
+                        <input type="hidden" id="artworkId" value="${artwork.id}">
+
+                        <div class="mb-3">
+                            <label for="artworkArtist" class="form-label">작가 *</label>
+                            <select class="form-select" id="artworkArtist" required>
+                                ${artistOptions}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkTitle" class="form-label">작품명 *</label>
+                            <input type="text" class="form-control" id="artworkTitle" value="${artwork.title}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkTitleEn" class="form-label">영문 작품명</label>
+                            <input type="text" class="form-control" id="artworkTitleEn" value="${artwork.title_en || ''}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkSize" class="form-label">작품 크기</label>
+                            <input type="text" class="form-control" id="artworkSize" value="${artwork.size || ''}" placeholder="예: 53x45.5cm">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkYear" class="form-label">제작년도</label>
+                            <input type="text" class="form-control" id="artworkYear" value="${artwork.year || ''}" placeholder="예: 2024">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkPrice" class="form-label">가격</label>
+                            <input type="text" class="form-control" id="artworkPrice" value="${artwork.price || ''}" placeholder="예: 5,000,000">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkImage" class="form-label">작품 이미지</label>
+                            <input type="file" class="form-control" id="artworkImage" accept="image/*">
+                            <div id="currentImagePreview" class="mt-2">
+                                ${artwork.image ? `
+                                    <div class="mt-2">
+                                        <p class="mb-2">현재 작품 이미지:</p>
+                                        <img src="${artwork.image}" alt="${artwork.title}"
+                                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="artworkOrder" class="form-label">순서 *</label>
+                            <input type="number" class="form-control" id="artworkOrder" value="${artwork.order}" required min="1">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="artworkIsActive" ${artwork.is_active ? 'checked' : ''}>
+                                <label class="form-check-label" for="artworkIsActive">활성화</label>
+                            </div>
+                        </div>
+                    </form>
+                `;
+
+                window.showEditModal('작품 수정', formContent, function($modal) {
+                    saveArtwork(true, $modal);
+                }, { modalId: 'artworkModal', size: 'modal-lg' });
+            },
+            error: function(xhr) {
+                console.error('작품 조회 실패:', xhr.responseText);
+                showToast('작품 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveArtwork(isEdit, $modal) {
+        const id = $('#artworkId').val();
+        const url = isEdit ? `/admin-panel/api/artwork/${id}/update/` : '/admin-panel/api/artwork/create/';
+
+        const formData = new FormData();
+        formData.append('artist_id', $('#artworkArtist').val());
+        formData.append('title', $('#artworkTitle').val());
+        formData.append('title_en', $('#artworkTitleEn').val() || '');
+        formData.append('size', $('#artworkSize').val() || '');
+        formData.append('year', $('#artworkYear').val() || '');
+        formData.append('price', $('#artworkPrice').val() || '');
+        formData.append('order', $('#artworkOrder').val());
+        formData.append('is_active', $('#artworkIsActive').is(':checked') ? 'true' : 'false');
+
+        const imageFile = $('#artworkImage')[0].files[0];
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                showToast(isEdit ? '작품 정보가 수정되었습니다.' : '작품이 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadArtworks();
+            },
+            error: function(xhr) {
+                console.error('작품 저장 실패:', xhr.responseText);
+                const errorMsg = xhr.responseJSON?.message || '작품 저장에 실패했습니다.';
+                showToast(errorMsg, 'error');
+            }
+        });
+    }
+
+    function openDeleteArtworkModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 작품을 삭제하시겠습니까?',
+            function($modal) {
+                confirmDeleteArtwork($modal);
+            },
+            {
+                modalId: 'artworkDeleteModal',
+                title: '작품 삭제'
+            }
+        );
+    }
+
+    function confirmDeleteArtwork($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/artwork/${deleteTargetId}/delete/`,
+            method: 'POST',
+            success: function(response) {
+                showToast('작품이 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadArtworks();
+            },
+            error: function(xhr) {
+                console.error('작품 삭제 실패:', xhr.responseText);
+                showToast('작품 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

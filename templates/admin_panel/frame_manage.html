@@ -1,0 +1,320 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}액자 관리{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-frame"></i> 액자 관리
+            </h1>
+            <p class="page-subtitle">액자 제작 정보를 관리합니다 (1개 항목에 3개 이미지)</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openCreateFrameModal()">
+            <i class="fas fa-plus"></i> 액자 추가
+        </button>
+    </div>
+</div>
+
+<!-- 액자 목록 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 액자 목록
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">순서</th>
+                        <th>제목</th>
+                        <th>설명</th>
+                        <th style="width: 100px;">상태</th>
+                        <th style="width: 150px;" class="text-center">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="frameTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            로딩중...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteTargetId = null;
+
+    $(document).ready(function() {
+        loadFrames();
+    });
+
+    function loadFrames() {
+        $.ajax({
+            url: '/admin-panel/api/frame/list/',
+            method: 'GET',
+            success: function(response) {
+                renderFrames(response.frames);
+            },
+            error: function(xhr) {
+                console.error('액자 목록 로드 실패:', xhr.responseText);
+                showToast('액자 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function renderFrames(frames) {
+        const tbody = $('#frameTableBody');
+        tbody.empty();
+
+        if (frames.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        등록된 액자가 없습니다
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        frames.forEach(function(frame) {
+            const statusBadge = frame.is_active
+                ? '<span class="badge bg-success">활성</span>'
+                : '<span class="badge bg-secondary">비활성</span>';
+
+            const descPreview = frame.description.length > 60
+                ? frame.description.substring(0, 60) + '...'
+                : frame.description;
+
+            tbody.append(`
+                <tr>
+                    <td>${frame.order}</td>
+                    <td><strong>${frame.title}</strong></td>
+                    <td>${descPreview}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditFrameModal(${frame.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="openDeleteFrameModal(${frame.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    function openCreateFrameModal() {
+        // 실제 액자 개수로 계산 (빈 메시지 행 제외)
+        const actualCount = $('#frameTableBody tr').filter(function() {
+            return !$(this).find('.text-muted').length;
+        }).length;
+        const nextOrder = actualCount + 1;
+
+        const formHTML = `
+            <div class="mb-3">
+                <label for="frameTitle" class="form-label">제목 *</label>
+                <input type="text" class="form-control" id="frameTitle" required value="액자 제작">
+            </div>
+            <div class="mb-3">
+                <label for="frameDescription" class="form-label">설명 *</label>
+                <textarea class="form-control" id="frameDescription" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="frameImage1" class="form-label">액자 이미지 1 *</label>
+                <input type="file" class="form-control" id="frameImage1" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label for="frameImage2" class="form-label">액자 이미지 2</label>
+                <input type="file" class="form-control" id="frameImage2" accept="image/*">
+            </div>
+            <div class="mb-3">
+                <label for="frameImage3" class="form-label">액자 이미지 3</label>
+                <input type="file" class="form-control" id="frameImage3" accept="image/*">
+            </div>
+            <div class="mb-3">
+                <label for="frameOrder" class="form-label">순서 *</label>
+                <input type="number" class="form-control" id="frameOrder" required min="0" value="${nextOrder}">
+            </div>
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="frameIsActive" checked>
+                    <label class="form-check-label" for="frameIsActive">활성화</label>
+                </div>
+            </div>
+        `;
+
+        window.showCreateModal('액자 추가', formHTML, function($modal) {
+            saveFrame(false, $modal);
+        }, { modalId: 'frameModal', size: 'modal-lg' });
+    }
+
+    function openEditFrameModal(id) {
+        $.ajax({
+            url: `/admin-panel/api/frame/${id}/`,
+            method: 'GET',
+            success: function(frame) {
+
+                const imagePreview1 = frame.image_1 ? `
+                    <div class="mt-2">
+                        <p class="mb-2">현재 액자 이미지 1:</p>
+                        <img src="${frame.image_1}" alt="${frame.title}"
+                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    </div>
+                ` : '';
+
+                const imagePreview2 = frame.image_2 ? `
+                    <div class="mt-2">
+                        <p class="mb-2">현재 액자 이미지 2:</p>
+                        <img src="${frame.image_2}" alt="${frame.title}"
+                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    </div>
+                ` : '';
+
+                const imagePreview3 = frame.image_3 ? `
+                    <div class="mt-2">
+                        <p class="mb-2">현재 액자 이미지 3:</p>
+                        <img src="${frame.image_3}" alt="${frame.title}"
+                             style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    </div>
+                ` : '';
+
+                const formHTML = `
+                    <input type="hidden" id="frameId" value="${frame.id}">
+                    <div class="mb-3">
+                        <label for="frameTitle" class="form-label">제목 *</label>
+                        <input type="text" class="form-control" id="frameTitle" required value="${frame.title}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frameDescription" class="form-label">설명 *</label>
+                        <textarea class="form-control" id="frameDescription" rows="4" required>${frame.description}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="frameImage1" class="form-label">액자 이미지 1</label>
+                        <input type="file" class="form-control" id="frameImage1" accept="image/*">
+                        ${imagePreview1}
+                    </div>
+                    <div class="mb-3">
+                        <label for="frameImage2" class="form-label">액자 이미지 2</label>
+                        <input type="file" class="form-control" id="frameImage2" accept="image/*">
+                        ${imagePreview2}
+                    </div>
+                    <div class="mb-3">
+                        <label for="frameImage3" class="form-label">액자 이미지 3</label>
+                        <input type="file" class="form-control" id="frameImage3" accept="image/*">
+                        ${imagePreview3}
+                    </div>
+                    <div class="mb-3">
+                        <label for="frameOrder" class="form-label">순서 *</label>
+                        <input type="number" class="form-control" id="frameOrder" required min="0" value="${frame.order}">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="frameIsActive" ${frame.is_active ? 'checked' : ''}>
+                            <label class="form-check-label" for="frameIsActive">활성화</label>
+                        </div>
+                    </div>
+                `;
+
+                window.showEditModal('액자 수정', formHTML, function($modal) {
+                    saveFrame(true, $modal);
+                }, { modalId: 'frameModal', size: 'modal-lg' });
+            },
+            error: function(xhr) {
+                console.error('액자 조회 실패:', xhr.responseText);
+                showToast('액자 정보를 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function saveFrame(isEdit, $modal) {
+        const id = $('#frameId').val();
+        const url = isEdit ? `/admin-panel/api/frame/${id}/update/` : '/admin-panel/api/frame/create/';
+
+        const formData = new FormData();
+        formData.append('title', $('#frameTitle').val());
+        formData.append('description', $('#frameDescription').val());
+        formData.append('order', $('#frameOrder').val());
+        formData.append('is_active', $('#frameIsActive').is(':checked') ? 'true' : 'false');
+
+        // 3개 이미지 파일 처리
+        const imageFile1 = $('#frameImage1')[0].files[0];
+        const imageFile2 = $('#frameImage2')[0].files[0];
+        const imageFile3 = $('#frameImage3')[0].files[0];
+
+        if (imageFile1) {
+            formData.append('image_1', imageFile1);
+        } else if (!isEdit) {
+            showToast('액자 이미지 1은 필수입니다.', 'error');
+            return;
+        }
+
+        if (imageFile2) {
+            formData.append('image_2', imageFile2);
+        }
+
+        if (imageFile3) {
+            formData.append('image_3', imageFile3);
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                showToast(isEdit ? '액자 정보가 수정되었습니다.' : '액자가 추가되었습니다.', 'success');
+                closeModal($modal);
+                loadFrames();
+            },
+            error: function(xhr) {
+                console.error('액자 저장 실패:', xhr.responseText);
+                showToast('액자 저장에 실패했습니다.\n' + (xhr.responseJSON?.message || ''), 'error');
+            }
+        });
+    }
+
+    function openDeleteFrameModal(id) {
+        deleteTargetId = id;
+        window.showDeleteModal(
+            '정말로 이 액자를 삭제하시겠습니까?',
+            function($modal) {
+                confirmDelete($modal);
+            },
+            {
+                modalId: 'deleteFrameModal',
+                title: '액자 삭제',
+                dangerText: '이 작업은 되돌릴 수 없습니다.'
+            }
+        );
+    }
+
+    function confirmDelete($modal) {
+        if (!deleteTargetId) return;
+
+        $.ajax({
+            url: `/admin-panel/api/frame/${deleteTargetId}/delete/`,
+            method: 'POST',
+            success: function(response) {
+                showToast('액자가 삭제되었습니다.', 'success');
+                closeModal($modal);
+                deleteTargetId = null;
+                loadFrames();
+            },
+            error: function(xhr) {
+                console.error('액자 삭제 실패:', xhr.responseText);
+                showToast('액자 삭제에 실패했습니다.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

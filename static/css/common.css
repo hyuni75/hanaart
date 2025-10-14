@@ -1,0 +1,433 @@
+/* ========================================
+   하나아트갤러리 공통 스타일
+   ======================================== */
+
+/* CSS Variables (디자인 시스템) */
+:root {
+    /* 색상 팔레트 */
+    --primary: #1a1a1a;
+    --secondary: #f5f5f5;
+    --accent: #d4af37;
+    --text-dark: #333;
+    --text-light: #666;
+    --text-muted: #999;
+    --border-color: #ddd;
+    --bg-light: #fafafa;
+
+    /* 타이포그래피 */
+    --font-korean: 'Noto Sans KR', sans-serif;
+    --font-english: 'Montserrat', sans-serif;
+
+    /* 간격 */
+    --section-spacing: 50px;
+    --card-spacing: 25px;
+    --inner-padding: 20px;
+
+    /* 전환 효과 */
+    --transition-base: 0.3s ease;
+}
+
+/* ========================================
+   기본 스타일
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-korean);
+    color: var(--text-dark);
+    line-height: 1.7;
+    background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+p {
+    margin-bottom: 1rem;
+}
+
+a {
+    text-decoration: none;
+    color: var(--text-dark);
+    transition: var(--transition-base);
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ========================================
+   Navbar 스타일 (PDF 디자인 기반 - 시각적 개선)
+   ======================================== */
+.navbar {
+    background-color: #fff;
+    transition: transform var(--transition-base);
+    padding: 0.75rem 0;
+    border-bottom: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0;
+}
+
+.navbar-brand img {
+    height: 45px;
+    width: auto;
+}
+
+.navbar-brand span {
+    font-family: var(--font-english);
+    font-weight: 300;
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+/* PDF 스타일: 둥근 테두리 버튼 (pill 모양) - 시각적 개선 */
+.navbar-nav {
+    gap: 0.5rem;
+}
+
+.navbar-nav .nav-item {
+    margin: 0;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-dark);
+    font-weight: 400;
+    font-size: 0.875rem;
+    padding: 0.5rem 1.5rem;
+    border: 1px solid #333;
+    border-radius: 50px;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    white-space: nowrap;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    background-color: #333;
+    color: #fff;
+    border-color: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-nav .nav-link.text-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.navbar-nav .nav-link.text-danger:hover {
+    background-color: #dc3545;
+    color: #fff !important;
+    border-color: #dc3545;
+}
+
+/* ========================================
+   Footer 스타일 (PDF 디자인 기반 - 시각적 개선)
+   ======================================== */
+.footer {
+    margin-top: var(--section-spacing);
+    background-color: #fafafa;
+    border-top: 1px solid #e8e8e8;
+    padding: 2.5rem 0 2rem;
+}
+
+.footer img {
+    height: 70px;
+    width: auto;
+    margin-bottom: 0.75rem;
+}
+
+.footer .text-muted {
+    color: #999 !important;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.footer h5 {
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    letter-spacing: -0.3px;
+}
+
+.footer p {
+    margin-bottom: 0.4rem;
+    color: #555;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+
+.footer strong {
+    color: #333;
+    font-weight: 600;
+    min-width: 60px;
+    display: inline-block;
+}
+
+.footer a {
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: #000;
+}
+
+/* ========================================
+   공통 섹션 스타일
+   ======================================== */
+.section {
+    padding: var(--section-spacing) 0;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   카드 스타일
+   ======================================== */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    margin-bottom: var(--card-spacing);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: var(--inner-padding);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.card-text {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* ========================================
+   버튼 스타일
+   ======================================== */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    transition: var(--transition-base);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-accent {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-accent:hover {
+    background-color: #b8941f;
+    border-color: #b8941f;
+}
+
+/* ========================================
+   갤러리 그리드
+   ======================================== */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--card-spacing);
+    margin-bottom: 3rem;
+}
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.gallery-item:hover {
+    transform: scale(1.05);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.gallery-item-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: #fff;
+    padding: 1rem;
+    opacity: 0;
+    transition: var(--transition-base);
+}
+
+.gallery-item:hover .gallery-item-overlay {
+    opacity: 1;
+}
+
+/* ========================================
+   모달 갤러리 스타일
+   ======================================== */
+.modal-gallery .modal-content {
+    background-color: rgba(0, 0, 0, 0.95);
+    border: none;
+    border-radius: 0;
+}
+
+.modal-gallery .modal-body {
+    padding: 0;
+    position: relative;
+}
+
+.modal-gallery .modal-gallery-img {
+    width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+.modal-gallery .carousel-control-prev,
+.modal-gallery .carousel-control-next {
+    width: 10%;
+}
+
+.modal-gallery .carousel-indicators {
+    bottom: -50px;
+}
+
+.modal-gallery .btn-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    filter: invert(1);
+}
+
+/* ========================================
+   반응형 디자인
+   ======================================== */
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.5rem; }
+
+    .section {
+        padding: 35px 0;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .card-img-top {
+        height: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --section-spacing: 30px;
+        --card-spacing: 15px;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.5rem 0;
+    }
+}
+
+/* ========================================
+   유틸리티 클래스
+   ======================================== */
+.text-accent {
+    color: var(--accent);
+}
+
+.bg-light-gray {
+    background-color: var(--bg-light);
+}
+
+.divider {
+    border-top: 2px solid var(--border-color);
+    margin: 3rem 0;
+}
+
+.mb-section {
+    margin-bottom: var(--section-spacing);
+}

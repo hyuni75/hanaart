@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}인사말 - 하나아트갤러리{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 70px;">
+    <!-- Header Section -->
+    <section class="section-header">
+        <h5 class="text-muted text-uppercase">ABOUT</h5>
+        <h1 class="section-title">인사말</h1>
+    </section>
+
+    <!-- Feature Section (텍스트 콘텐츠) -->
+    <section class="section">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <p class="lead text-center" style="line-height: 2; font-size: 1.1rem;">
+                    {{ about.content_1 }}
+                </p>
+                <p class="lead text-center mt-4" style="line-height: 2; font-size: 1.1rem;">
+                    {{ about.content_2 }}
+                </p>
+                <p class="lead text-center mt-4" style="line-height: 2; font-size: 1.1rem;">
+                    {{ about.content_3 }}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section (전시장 이미지) -->
+    <section class="section">
+        <div class="row">
+            {% if about.image_1 %}
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <img src="{{ about.image_1.url }}" class="card-img-top" alt="{{ about.image_1_title }}" style="height: 400px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ about.image_1_title }}</h5>
+                        <p class="card-text text-muted">{{ about.image_1_desc }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if about.image_2 %}
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <img src="{{ about.image_2.url }}" class="card-img-top" alt="{{ about.image_2_title }}" style="height: 400px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ about.image_2_title }}</h5>
+                        <p class="card-text text-muted">{{ about.image_2_desc }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
