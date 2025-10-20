@@ -34,12 +34,11 @@
     .cinematic-nav {
         position: fixed;
         top: 0;
-        left: 0;
         right: 0;
         z-index: 1000;
         padding: 3rem 5rem;
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         pointer-events: none;
     }
@@ -49,13 +48,7 @@
     }
 
     .cinematic-brand {
-        font-size: 2rem;
-        font-weight: 300;
-        letter-spacing: 8px;
-        color: #fff;
-        text-transform: uppercase;
-        font-family: 'Playfair Display', serif;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        display: none; /* 좌측 상단 브랜드 문구 숨김 */
     }
 
     .cinematic-menu {
@@ -309,29 +302,18 @@
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* 로딩 애니메이션 */
-    .loading-cinematic {
+    /* 장식용 애니메이션 (계속 표시) */
+    .decoration-animation {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        transition: opacity 1s ease;
-    }
-
-    .loading-cinematic.hidden {
-        opacity: 0;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% - 80px));
+        z-index: 40;
         pointer-events: none;
     }
 
     .loading-line {
-        width: 200px;
+        width: 400px;
         height: 2px;
         background: rgba(255, 255, 255, 0.1);
         position: relative;
@@ -361,6 +343,40 @@
         text-transform: uppercase;
         margin-top: 3rem;
         font-family: 'Playfair Display', serif;
+    }
+
+    /* 중앙 고정 타이틀 (항상 표시) */
+    .center-title {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 50;
+        pointer-events: none;
+    }
+
+    .center-title-text {
+        color: #fff;
+        font-size: 3rem;
+        font-weight: 300;
+        letter-spacing: 12px;
+        text-transform: uppercase;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.9);
+        margin: 0;
+        opacity: 0;
+        animation: fadeInTitle 1s ease 0s forwards;
+    }
+
+    @keyframes fadeInTitle {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 0.8;
+            transform: translateY(0);
+        }
     }
 
     /* 반응형 */
@@ -400,6 +416,11 @@
         .slide-counter {
             right: 2rem;
         }
+
+        .center-title-text {
+            font-size: 2rem;
+            letter-spacing: 8px;
+        }
     }
 </style>
 
@@ -408,27 +429,33 @@
 {% endblock %}
 
 {% block content %}
-<!-- 로딩 화면 -->
-<div class="loading-cinematic" id="loadingCinematic">
+<!-- 장식용 애니메이션 라인 (계속 표시) -->
+<div class="decoration-animation">
     <div class="loading-line"></div>
-    <p class="loading-title">Hanaart Gallery</p>
+</div>
+
+<!-- 중앙 고정 타이틀 (항상 표시) -->
+<div class="center-title">
+    <p class="center-title-text">Hanaart Gallery</p>
 </div>
 
 <!-- 네비게이션 -->
 <nav class="cinematic-nav">
-    <div class="cinematic-brand">Hanaart</div>
     <ul class="cinematic-menu">
         <li><a href="{% url 'pages:about' %}">인사말</a></li>
         <li><a href="{% url 'pages:history' %}">연혁</a></li>
         <li><a href="{% url 'gallery:exhibition_list' %}">전시</a></li>
         <li><a href="{% url 'gallery:artist_list' %}">작가</a></li>
         <li><a href="{% url 'gallery:artfair_list' %}">아트페어</a></li>
-        <li><a href="{% url 'gallery:frame' %}">액자제작</a></li>
+        <li><a href="{% url 'gallery:frame' %}">하나액자</a></li>
         <li><a href="{% url 'pages:contact' %}">연락처</a></li>
     </ul>
 </nav>
 
-<!-- 슬라이더 -->
+<!-- ========================================
+     슬라이더 - 주석 처리 (작가 작품 슬라이더 비활성화)
+     ======================================== -->
+<!--
 <div class="cinematic-slider" id="cinematicSlider">
     {% if featured_artworks %}
         {% for artwork in featured_artworks %}
@@ -456,8 +483,12 @@
         </div>
     {% endif %}
 </div>
+-->
 
-<!-- 컨트롤 -->
+<!-- ========================================
+     컨트롤 - 주석 처리 (슬라이더 컨트롤 버튼 비활성화)
+     ======================================== -->
+<!--
 <div class="slider-controls">
     <div class="slider-btn" id="prevBtn">
         <i class="fas fa-chevron-left"></i>
@@ -466,8 +497,12 @@
         <i class="fas fa-chevron-right"></i>
     </div>
 </div>
+-->
 
-<!-- 진행률 인디케이터 -->
+<!-- ========================================
+     진행률 인디케이터 - 주석 처리 (진행률 점 비활성화)
+     ======================================== -->
+<!--
 <div class="progress-indicator" id="progressIndicator">
     {% if featured_artworks %}
         {% for artwork in featured_artworks %}
@@ -475,13 +510,22 @@
         {% endfor %}
     {% endif %}
 </div>
+-->
 
-<!-- 슬라이드 카운터 -->
+<!-- ========================================
+     슬라이드 카운터 - 주석 처리 (카운터 비활성화)
+     ======================================== -->
+<!--
 <div class="slide-counter" id="slideCounter">01 / {{ featured_artworks|length|default:"01" }}</div>
+-->
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    /* ========================================
+       슬라이더 JavaScript - 주석 처리 (슬라이더 기능 비활성화)
+       ======================================== */
+    /*
     document.addEventListener('DOMContentLoaded', function() {
         const slides = document.querySelectorAll('.slide');
         const dots = document.querySelectorAll('.progress-dot');
@@ -592,5 +636,6 @@
             }, 50);
         }, { passive: true });
     });
+    */
 </script>
 {% endblock %}
