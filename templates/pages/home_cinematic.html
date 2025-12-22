@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 <style>
-    /* base.html 요소 강제 숨김 - 충돌 방지 */
+    /* base.html 요소 강제 숨김 - 충돌 방지 (데스크톱) */
     #mainNavbar,
     .navbar,
     .footer,
@@ -14,6 +14,11 @@
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
+    }
+
+    /* 모바일 네비게이션 - 기본 숨김 (responsive.css에서 미디어 쿼리로 제어) */
+    .mobile-nav-overlay.active {
+        display: block;
     }
 
     /* main 태그 리셋 */
@@ -380,6 +385,80 @@
     }
 
     /* 반응형 */
+    @media (max-width: 991.98px) {
+        /* 시네마틱 햄버거 메뉴 - 좌측 상단 */
+        .mobile-menu-toggle {
+            display: flex;
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 1100;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .mobile-menu-toggle .hamburger span {
+            background: #000;
+        }
+
+        /* 모바일 슬라이드 메뉴 - 어두운 테마 */
+        .mobile-nav-menu {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .mobile-nav-header {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-close {
+            color: #fff;
+        }
+
+        .mobile-nav-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-item {
+            color: #fff;
+            border-left-color: transparent;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .mobile-nav-item:hover,
+        .mobile-nav-item:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #d4af37;
+            color: #d4af37;
+        }
+
+        .mobile-nav-item.admin-link {
+            color: #ff6b6b;
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-item.admin-link:hover {
+            background: rgba(255, 107, 107, 0.1);
+            border-left-color: #ff6b6b;
+        }
+
+        /* 데스크톱 네비게이션 숨김 */
+        .cinematic-nav {
+            display: none;
+        }
+
+        .cinematic-menu {
+            display: none;
+        }
+    }
+
     @media (max-width: 768px) {
         .cinematic-nav {
             padding: 2rem;
@@ -388,10 +467,6 @@
         .cinematic-brand {
             font-size: 1.5rem;
             letter-spacing: 4px;
-        }
-
-        .cinematic-menu {
-            display: none;
         }
 
         .slide-content {
@@ -422,6 +497,29 @@
             letter-spacing: 8px;
         }
     }
+
+    @media (max-width: 575.98px) {
+        .mobile-menu-toggle {
+            top: 1.5rem;
+            left: 1.5rem;
+            width: 44px;
+            height: 44px;
+        }
+
+        .center-title-text {
+            font-size: 1.5rem;
+            letter-spacing: 6px;
+        }
+
+        .slide-content h2 {
+            font-size: 2rem;
+        }
+
+        .slide-content .artist {
+            font-size: 1rem;
+            letter-spacing: 4px;
+        }
+    }
 </style>
 
 <!-- Google Fonts -->
@@ -429,6 +527,44 @@
 {% endblock %}
 
 {% block content %}
+<!-- 모바일 햄버거 버튼 (시네마틱 전용) -->
+<button class="mobile-menu-toggle cinematic-mobile-toggle" id="cinematicMenuToggle"
+        aria-label="메뉴 열기" aria-expanded="false">
+    <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</button>
+
+<!-- 모바일 오버레이 -->
+<div class="mobile-nav-overlay" id="cinematicNavOverlay"></div>
+
+<!-- 모바일 슬라이드 메뉴 (시네마틱 전용) -->
+<nav class="mobile-nav-menu" id="cinematicNavMenu" aria-label="모바일 네비게이션">
+    <div class="mobile-nav-header">
+        <div class="mobile-nav-logo">
+            <a href="{% url 'pages:home' %}">
+                <img src="{% static 'images/ci_hana-transport.png' %}" alt="하나아트갤러리">
+            </a>
+        </div>
+        <button class="mobile-nav-close" id="cinematicNavClose" aria-label="메뉴 닫기">&times;</button>
+    </div>
+    <div class="mobile-nav-items">
+        <a href="{% url 'pages:home' %}" class="mobile-nav-item active">홈</a>
+        <a href="{% url 'pages:about' %}" class="mobile-nav-item">인사말</a>
+        <a href="{% url 'pages:history' %}" class="mobile-nav-item">연혁</a>
+        <a href="{% url 'gallery:exhibition_list' %}" class="mobile-nav-item">전시</a>
+        <a href="{% url 'gallery:artfair_list' %}" class="mobile-nav-item">아트페어</a>
+        <a href="{% url 'gallery:artist_list' %}" class="mobile-nav-item">작가</a>
+        <a href="{% url 'gallery:frame' %}" class="mobile-nav-item">하나액자</a>
+        <a href="{% url 'pages:contact' %}" class="mobile-nav-item">연락처</a>
+        {% if user.is_staff %}
+        <a href="{% url 'admin_panel:index' %}" class="mobile-nav-item admin-link">관리</a>
+        {% endif %}
+    </div>
+</nav>
+
 <!-- 장식용 애니메이션 라인 (계속 표시) -->
 <div class="decoration-animation">
     <div class="loading-line"></div>
@@ -439,7 +575,7 @@
     <p class="center-title-text">Hanaart Gallery</p>
 </div>
 
-<!-- 네비게이션 -->
+<!-- 데스크톱 네비게이션 -->
 <nav class="cinematic-nav">
     <ul class="cinematic-menu">
         <li><a href="{% url 'pages:about' %}">인사말</a></li>
@@ -522,6 +658,69 @@
 
 {% block extra_js %}
 <script>
+    /* ========================================
+       시네마틱 모바일 네비게이션
+       ======================================== */
+    (function() {
+        'use strict';
+
+        var isOpen = false;
+        var $toggle = $('#cinematicMenuToggle');
+        var $overlay = $('#cinematicNavOverlay');
+        var $menu = $('#cinematicNavMenu');
+        var $close = $('#cinematicNavClose');
+
+        function openMenu() {
+            isOpen = true;
+            $toggle.addClass('active').attr('aria-expanded', 'true');
+            $overlay.addClass('active');
+            $menu.addClass('active');
+            $('body').addClass('mobile-menu-open');
+        }
+
+        function closeMenu() {
+            isOpen = false;
+            $toggle.removeClass('active').attr('aria-expanded', 'false');
+            $overlay.removeClass('active');
+            $menu.removeClass('active');
+            $('body').removeClass('mobile-menu-open');
+        }
+
+        // 햄버거 버튼 클릭
+        $toggle.on('click', function(e) {
+            e.preventDefault();
+            if (isOpen) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // 닫기 버튼 클릭
+        $close.on('click', function(e) {
+            e.preventDefault();
+            closeMenu();
+        });
+
+        // 오버레이 클릭
+        $overlay.on('click', function() {
+            closeMenu();
+        });
+
+        // 메뉴 아이템 클릭
+        $('.mobile-nav-item').on('click', function() {
+            setTimeout(closeMenu, 150);
+        });
+
+        // ESC 키
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && isOpen) {
+                closeMenu();
+                $toggle.focus();
+            }
+        });
+    })();
+
     /* ========================================
        슬라이더 JavaScript - 주석 처리 (슬라이더 기능 비활성화)
        ======================================== */
