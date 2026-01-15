@@ -145,6 +145,12 @@ CORS_ALLOWED_ORIGINS = [
     f"http://localhost:{os.environ.get('WEB_PORT', '8000')}",
 ]
 
+# CSRF 신뢰 도메인 설정 (Django 4.0+)
+CSRF_TRUSTED_ORIGINS = [
+    "https://hanaart.kr",
+    "https://www.hanaart.kr",
+]
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
